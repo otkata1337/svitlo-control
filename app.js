@@ -10,7 +10,7 @@ const CITIES = {
 };
 
 // Конфігурація API (локальна розробка або хостинг)
-const API_BASE_URL = 'http://localhost:3000'; // Змінити на URL сервера при деплою
+const API_BASE_URL = 'https://svitlo-control-production.up.railway.app'; // Змінити на URL сервера при деплою
 
 let userConfig = {
     city: localStorage.getItem('svitlo_city') || 'smila',

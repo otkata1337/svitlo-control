@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="uk" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>СвітлоКонтроль — Графіки відключень (Черкаська обл.)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d1117">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom smooth scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0d1117;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #484f58;
+        }
+    </style>
+</head>
+<body class="bg-[#090d16] text-slate-100 h-full flex flex-col selection:bg-amber-500 selection:text-slate-950">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800/80 bg-[#090d16]/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-xl shadow-lg shadow-amber-500/5">
+                    ⚡
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-base tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">СвітлоКонтроль</h1>
+                    <p class="text-[11px] text-slate-400 font-medium tracking-wide uppercase">Черкаська область</p>
+                </div>
+            </div>
+
+            <button id="settings-btn" class="group flex items-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 px-3.5 py-2 rounded-xl transition-all shadow-sm">
+                <span class="text-amber-400 group-hover:rotate-45 transition-transform duration-300">⚙️</span>
+                <span id="current-location-label" class="text-xs font-semibold text-slate-200">м. Сміла • 3.1</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-4xl w-full mx-auto px-4 py-8 space-y-6">
+
+        <!-- Status Card (Hero) -->
+        <section id="status-card" class="relative overflow-hidden rounded-3xl p-7 border transition-all duration-500 shadow-2xl bg-slate-900/90 border-slate-800">
+            <!-- Background glow effect -->
+            <div id="status-glow" class="absolute -right-20 -top-20 w-64 h-64 rounded-full blur-3xl opacity-10 pointer-events-none transition-colors duration-500 bg-amber-500"></div>
+
+            <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div class="flex items-start space-x-5">
+                    <div id="status-icon-container" class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-inner shrink-0 bg-slate-800 border border-slate-700">
+                        <span id="status-icon">💡</span>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span id="status-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700">Перевірка</span>
+                            <span id="update-time" class="text-xs text-slate-400 font-mono">Оновлено щойно</span>
+                        </div>
+                        <h2 id="status-title" class="text-2xl md:text-3xl font-extrabold tracking-tight text-white">Завантаження...</h2>
+                        <p id="status-subtitle" class="text-sm text-slate-300 mt-1 max-w-md">Збираємо актуальний графік погодинних відключень</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col items-start md:items-end justify-center bg-slate-950/40 border border-slate-800/80 rounded-2xl p-4 shrink-0">
+                    <span class="text-[11px] text-slate-400 uppercase font-semibold tracking-wider">Наступна подія</span>
+                    <span id="next-event-time" class="text-lg font-bold font-mono text-amber-400 mt-0.5">--:--</span>
+                    <span id="next-event-desc" class="text-xs text-slate-400">Очікування даних</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Timeline Section -->
+        <section class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                        📊
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-slate-100">Графік на сьогодні</h3>
+                        <p class="text-xs text-slate-400 font-mono" id="today-date-str">--.--.2026</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4 text-xs font-medium bg-slate-950/50 px-3.5 py-2 rounded-xl border border-slate-800">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50"></span>
+                        <span class="text-slate-300">Світло є</span>
+                    </div>
+                    <div class="w-px h-3.5 bg-slate-800"></div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-rose-500 shadow-sm shadow-rose-500/50"></span>
+                        <span class="text-slate-300">Відключення</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline Bar Container -->
+            <div class="space-y-3">
+                <div id="timeline-bar" class="h-12 bg-slate-950 rounded-2xl overflow-hidden flex shadow-inner border border-slate-800/80 p-1 gap-0.5">
+                    <!-- Rendered via JS -->
+                </div>
+                <!-- Hour Labels -->
+                <div class="flex justify-between text-[11px] text-slate-400 px-2 font-mono font-medium">
+                    <span>00:00</span>
+                    <span>03:00</span>
+                    <span>06:00</span>
+                    <span>09:00</span>
+                    <span>12:00</span>
+                    <span>15:00</span>
+                    <span>18:00</span>
+                    <span>21:00</span>
+                    <span>24:00</span>
+                </div>
+            </div>
+
+            <!-- Outage Intervals List -->
+            <div class="pt-2 border-t border-slate-800/80">
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Заплановані періоди без світла:</h4>
+                <div id="outage-intervals" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer / Source -->
+        <footer class="flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 py-4 px-2 gap-2 border-t border-slate-800/40">
+            <p>⚡ Офіційні дані АТ «Черкасиобленерго» (ГПВ).</p>
+            <p>Незалежний клієнт • Працює оффлайн (PWA)</p>
+        </footer>
+
+    </main>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 md:p-8 space-y-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-white">Налаштування локації</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Виберіть свій населений пункт та чергу</p>
+                </div>
+                <button id="close-modal-btn" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition">&times;</button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Населений пункт</label>
+                    <select id="city-select" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-amber-500 transition">
+                        <option value="smila">м. Сміла</option>
+                        <option value="cherkasy">м. Черкаси</option>
+                        <option value="umany">м. Умань</option>
+                        <option value="zolotonosha">м. Золотоноша</option>
+                        <option value="kaniv">м. Канів</option>
+                        <option value="smila_district">Смілянський район</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Черга відключень</label>
+                    <select id="queue-select" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-amber-500 transition">
+                        <option value="1.1">Черга 1.1</option>
+                        <option value="1.2">Черга 1.2</option>
+                        <option value="2.1">Черга 2.1</option>
+                        <option value="2.2">Черга 2.2</option>
+                        <option value="3.1">Черга 3.1</option>
+                        <option value="3.2">Черга 3.2</option>
+                        <option value="4.1">Черга 4.1</option>
+                        <option value="4.2">Черга 4.2</option>
+                        <option value="5.1">Черга 5.1</option>
+                        <option value="5.2">Черга 5.2</option>
+                        <option value="6.1">Черга 6.1</option>
+                        <option value="6.2">Черга 6.2</option>
+                    </select>
+                </div>
+            </div>
+
+            <button id="save-settings-btn" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-3.5 rounded-2xl transition shadow-lg shadow-amber-500/20 cursor-pointer">
+                Зберегти параметри
+            </button>
+        </div>
+    </div>
+
+    <!-- Script -->
+    <script src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "name": "svitlo-control",
+  "version": "1.0.0",
+  "description": "СвітлоКонтроль — PWA для графіків відключень електроенергії Черкаської області",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "ukraine",
+    "power-outage",
+    "cherkasy",
+    "schedule",
+    "pwa"
+  ],
+  "author": "SvitloControl",
+  "license": "MIT",
+  "dependencies": {}
+}

@@ -39,25 +39,25 @@
 
     <!-- Header -->
     <header class="border-b border-slate-800/80 bg-[#090d16]/80 backdrop-blur-md sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-xl shadow-lg shadow-amber-500/5">
+        <div class="max-w-4xl mx-auto px-3 sm:px-4 h-16 flex items-center justify-between gap-2">
+            <div class="flex items-center space-x-2.5 min-w-0">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-lg sm:text-xl shadow-lg shadow-amber-500/5 shrink-0">
                     ⚡
                 </div>
-                <div>
-                    <h1 class="font-extrabold text-base tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">СвітлоКонтроль</h1>
-                    <p class="text-[11px] text-slate-400 font-medium tracking-wide uppercase">Черкаська область</p>
+                <div class="min-w-0">
+                    <h1 class="font-extrabold text-sm sm:text-base tracking-tight text-white truncate">СвітлоКонтроль</h1>
+                    <p class="text-[10px] sm:text-[11px] text-slate-400 font-medium tracking-wide uppercase truncate">Черкаська обл.</p>
                 </div>
             </div>
 
-            <div class="flex items-center gap-2">
-                <button id="find-queue-btn" class="group flex items-center gap-2 bg-blue-900/80 hover:bg-blue-800 border border-blue-800 hover:border-blue-700 px-3.5 py-2 rounded-xl transition-all shadow-sm text-[11px] font-semibold text-blue-200">
+            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <button id="find-queue-btn" class="group flex items-center gap-1.5 bg-blue-900/80 hover:bg-blue-800 border border-blue-800 hover:border-blue-700 px-2.5 sm:px-3.5 py-2 rounded-xl transition-all shadow-sm text-[11px] font-semibold text-blue-200">
                     <span>🔍</span>
-                    <span>Знайти чергу</span>
+                    <span class="hidden xs:inline">Знайти</span>
                 </button>
-                <button id="settings-btn" class="group flex items-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 px-3.5 py-2 rounded-xl transition-all shadow-sm">
-                    <span class="text-amber-400 group-hover:rotate-45 transition-transform duration-300">⚙️</span>
-                    <span id="current-location-label" class="text-xs font-semibold text-slate-200">м. Сміла • 3.1</span>
+                <button id="settings-btn" class="group flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 px-2.5 sm:px-3.5 py-2 rounded-xl transition-all shadow-sm max-w-[130px] sm:max-w-none">
+                    <span class="text-amber-400 group-hover:rotate-45 transition-transform duration-300 text-sm">⚙️</span>
+                    <span id="current-location-label" class="text-xs font-semibold text-slate-200 truncate">м. Сміла • 3.1</span>
                 </button>
             </div>
         </div>
@@ -126,16 +126,16 @@
                     <!-- Rendered via JS -->
                 </div>
                 <!-- Hour Labels -->
-                <div class="flex justify-between text-[11px] text-slate-400 px-2 font-mono font-medium">
-                    <span>00:00</span>
-                    <span>03:00</span>
-                    <span>06:00</span>
-                    <span>09:00</span>
-                    <span>12:00</span>
-                    <span>15:00</span>
-                    <span>18:00</span>
-                    <span>21:00</span>
-                    <span>24:00</span>
+                <div class="grid grid-cols-9 text-[9px] sm:text-[11px] text-slate-400 px-1 font-mono font-medium text-center">
+                    <span>00</span>
+                    <span>03</span>
+                    <span>06</span>
+                    <span>09</span>
+                    <span>12</span>
+                    <span>15</span>
+                    <span>18</span>
+                    <span>21</span>
+                    <span>24</span>
                 </div>
             </div>
 

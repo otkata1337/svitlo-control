@@ -1,15 +1,19 @@
 {
-  "name": "СвітлоКонтроль Черкащина",
+  "name": "СвітлоКонтроль — Графіки відключень",
   "short_name": "СвітлоКонтроль",
+  "description": "Незалежний моніторинг графіків відключення електроенергії в Черкаській області",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#2563eb",
+  "background_color": "#090d16",
+  "theme_color": "#0d1117",
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "icon.png",
-      "sizes": "192x192",
-      "type": "image/png"
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
 }

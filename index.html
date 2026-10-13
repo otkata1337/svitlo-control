@@ -50,10 +50,22 @@
                 </div>
             </div>
 
-            <button id="settings-btn" class="group flex items-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 px-3.5 py-2 rounded-xl transition-all shadow-sm">
-                <span class="text-amber-400 group-hover:rotate-45 transition-transform duration-300">⚙️</span>
-                <span id="current-location-label" class="text-xs font-semibold text-slate-200">м. Сміла • 3.1</span>
-            </button>
+            <div class="flex items-center gap-2">
+                <div class="hidden sm:flex items-center gap-2 text-xs text-slate-400 bg-slate-950/60 px-3 py-1.5 rounded-lg border border-slate-800/50">
+                    <span id="last-update-time">--:--</span>
+                    <button id="refresh-btn" class="ml-1 p-1 hover:text-slate-200 transition hover:bg-slate-900/80 rounded-md" title="Оновити дані">
+                        <span class="text-sm" id="refresh-icon">🔄</span>
+                    </button>
+                </div>
+                <button id="find-queue-btn" class="group flex items-center gap-2 bg-blue-900/80 hover:bg-blue-800 border border-blue-800 hover:border-blue-700 px-3.5 py-2 rounded-xl transition-all shadow-sm text-[11px] font-semibold text-blue-200">
+                    <span>🔍</span>
+                    <span>Знайти чергу</span>
+                </button>
+                <button id="settings-btn" class="group flex items-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 px-3.5 py-2 rounded-xl transition-all shadow-sm">
+                    <span class="text-amber-400 group-hover:rotate-45 transition-transform duration-300">⚙️</span>
+                    <span id="current-location-label" class="text-xs font-semibold text-slate-200">м. Сміла • 3.1</span>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -165,12 +177,7 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Населений пункт</label>
                     <select id="city-select" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-amber-500 transition">
-                        <option value="smila">м. Сміла</option>
-                        <option value="cherkasy">м. Черкаси</option>
-                        <option value="umany">м. Умань</option>
-                        <option value="zolotonosha">м. Золотоноша</option>
-                        <option value="kaniv">м. Канів</option>
-                        <option value="smila_district">Смілянський район</option>
+                        <!-- Populated via JS from address-db.js -->
                     </select>
                 </div>
 
@@ -199,7 +206,52 @@
         </div>
     </div>
 
-    <!-- Script -->
+    <!-- Find Queue Modal -->
+    <div id="find-queue-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 md:p-8 space-y-6 shadow-2xl">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-white">Знайти свою чергу</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">За адресою вашого дому</p>
+                </div>
+                <button id="close-find-queue-btn" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition">&times;</button>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Населений пункт</label>
+                    <select id="find-queue-location" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition">
+                        <!-- Populated via JS -->
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Адреса / Вулиця / Райóн</label>
+                    <input type="text" id="find-queue-address" placeholder="Наприклад: вул. Героїв, с. Озерщина" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition placeholder-slate-600">
+                </div>
+
+                <div id="find-queue-result" class="hidden bg-slate-950/60 border border-slate-800 rounded-2xl p-4">
+                    <p class="text-xs text-slate-400 uppercase tracking-wider mb-2">Ваша черга:</p>
+                    <p id="find-queue-result-text" class="text-2xl font-bold text-blue-400"></p>
+                </div>
+
+                <div id="find-queue-error" class="hidden bg-rose-950/60 border border-rose-800 rounded-2xl p-4">
+                    <p id="find-queue-error-text" class="text-sm text-rose-300"></p>
+                </div>
+            </div>
+
+            <button id="search-queue-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-2xl transition shadow-lg shadow-blue-600/20 cursor-pointer">
+                Пошукати
+            </button>
+
+            <button id="use-found-queue-btn" class="hidden w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-2xl transition shadow-lg shadow-emerald-600/20 cursor-pointer">
+                Використовувати цю чергу
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="address-db.js"></script>
     <script src="app.js"></script>
     <script>
         if ('serviceWorker' in navigator) {

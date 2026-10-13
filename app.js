@@ -1,25 +1,28 @@
-// app.js — СвітлоКонтроль (з інтеграцією API сервера)
+// app.js — СвітлоКонтроль (з інтеграцією API сервера + пошук черги)
 
-const CITIES = {
-    'smila': 'м. Сміла',
-    'cherkasy': 'м. Черкаси',
-    'umany': 'м. Умань',
-    'zolotonosha': 'м. Золотоноша',
-    'kaniv': 'м. Канів',
-    'smila_district': 'Смілянський район'
-};
-
-// Конфігурація API (локальна розробка або хостинг)
-const API_BASE_URL = 'https://svitlo-control-production.up.railway.app'; // Змінити на URL сервера при деплою
+const API_BASE_URL = 'https://svitlo-control-production.up.railway.app';
 
 let userConfig = {
     city: localStorage.getItem('svitlo_city') || 'smila',
     queue: localStorage.getItem('svitlo_queue') || '3.1'
 };
 
-let schedules = {}; // Графіки з сервера
+let schedules = {};
+let foundQueueForApply = null;
 
 // DOM Elements
+const findQueueBtn = document.getElementById('find-queue-btn');
+const findQueueModal = document.getElementById('find-queue-modal');
+const closeFindQueueBtn = document.getElementById('close-find-queue-btn');
+const findQueueLocationSelect = document.getElementById('find-queue-location');
+const findQueueAddressInput = document.getElementById('find-queue-address');
+const searchQueueBtn = document.getElementById('search-queue-btn');
+const findQueueResult = document.getElementById('find-queue-result');
+const findQueueResultText = document.getElementById('find-queue-result-text');
+const findQueueError = document.getElementById('find-queue-error');
+const findQueueErrorText = document.getElementById('find-queue-error-text');
+const useFoundQueueBtn = document.getElementById('use-found-queue-btn');
+
 const settingsBtn = document.getElementById('settings-btn');
 const settingsModal = document.getElementById('settings-modal');
 const closeModalBtn = document.getElementById('close-modal-btn');
@@ -43,6 +46,12 @@ const todayDateStr = document.getElementById('today-date-str');
 const timelineBar = document.getElementById('timeline-bar');
 const outageIntervalsEl = document.getElementById('outage-intervals');
 
+const lastUpdateTimeEl = document.getElementById('last-update-time');
+const refreshBtn = document.getElementById('refresh-btn');
+const refreshIcon = document.getElementById('refresh-icon');
+
+let lastDataUpdateTime = null;
+
 // Завантаження графіків з сервера
 async function fetchSchedules() {
     try {
@@ -56,29 +65,35 @@ async function fetchSchedules() {
 
         if (data.success && data.data) {
             schedules = data.data;
+            lastDataUpdateTime = new Date();
             console.log('✓ Графіки завантажено з сервера');
             localStorage.setItem('svitlo_schedules_cache', JSON.stringify(schedules));
+            localStorage.setItem('svitlo_last_update', lastDataUpdateTime.toISOString());
+            updateLastUpdateDisplay();
             return true;
         }
     } catch (error) {
         console.warn('⚠ Не вдалося завантажити графіки з сервера:', error.message);
 
-        // Спробуємо завантажити кеш з LocalStorage
         const cached = localStorage.getItem('svitlo_schedules_cache');
         if (cached) {
             schedules = JSON.parse(cached);
+            const savedTime = localStorage.getItem('svitlo_last_update');
+            if (savedTime) {
+                lastDataUpdateTime = new Date(savedTime);
+                updateLastUpdateDisplay();
+            }
             console.log('✓ Використовуємо кешовані графіки');
             return true;
         }
 
-        // Якщо нічого немає — використовуємо дефолт
         schedules = getDefaultSchedules();
         console.log('⚠ Використовуємо дефолтні графіки');
         return false;
     }
 }
 
-// Дефолтні графіки (якщо сервер недоступний)
+// Дефолтні графіки
 function getDefaultSchedules() {
     const today = new Date();
     const result = {};
@@ -108,7 +123,10 @@ function getDefaultSchedules() {
     return result;
 }
 
+// Ініціалізація
 async function initApp() {
+    populateLocationSelects();
+
     citySelect.value = userConfig.city;
     queueSelect.value = userConfig.queue;
     updateLocationLabel();
@@ -116,20 +134,37 @@ async function initApp() {
     const now = new Date();
     todayDateStr.textContent = now.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' });
 
-    // Завантажуємо графіки перед рендеренням
     await fetchSchedules();
     renderSchedule();
 
-    // Оновлення кожні 30 сек
     setInterval(renderSchedule, 30000);
-
-    // Спробуємо оновити графіки кожні 30 хвилин
     setInterval(fetchSchedules, 1800000);
 }
 
+// Заповнення dropdown з локаціями
+function populateLocationSelects() {
+    const locations = getAllLocations();
+
+    citySelect.innerHTML = '';
+    findQueueLocationSelect.innerHTML = '';
+
+    locations.forEach(loc => {
+        const option1 = document.createElement('option');
+        option1.value = loc.key;
+        option1.textContent = loc.name;
+        citySelect.appendChild(option1);
+
+        const option2 = document.createElement('option');
+        option2.value = loc.key;
+        option2.textContent = loc.name;
+        findQueueLocationSelect.appendChild(option2);
+    });
+}
+
 function updateLocationLabel() {
-    const cityName = CITIES[userConfig.city] || 'м. Сміла';
-    currentLocationLabel.textContent = `${cityName} • ${userConfig.queue}`;
+    const locationInfo = getLocationInfo(userConfig.city);
+    const locationName = locationInfo ? locationInfo.name : 'м. Сміла';
+    currentLocationLabel.textContent = `${locationName} • ${userConfig.queue}`;
 }
 
 function getScheduleForToday() {
@@ -157,7 +192,6 @@ function renderSchedule() {
     const intervals = getScheduleForToday();
     const currentlyOut = isOutageAtTime(currentHour, currentMinute, intervals);
 
-    // Зміна Hero-карти
     if (currentlyOut) {
         statusCard.className = "relative overflow-hidden rounded-3xl p-7 border transition-all duration-500 shadow-2xl bg-rose-950/40 border-rose-900/60";
         statusGlow.className = "absolute -right-20 -top-20 w-64 h-64 rounded-full blur-3xl opacity-20 pointer-events-none transition-colors duration-500 bg-rose-500";
@@ -180,7 +214,6 @@ function renderSchedule() {
 
     updateTime.textContent = `Оновлено о ${now.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}`;
 
-    // Пошук наступної події
     let nextTimeStr = "—";
     let nextDescStr = "Графік не знайдено";
 
@@ -210,7 +243,7 @@ function renderSchedule() {
     nextEventTime.textContent = nextTimeStr;
     nextEventDesc.textContent = nextDescStr;
 
-    // Рендер таймлайна
+    // Таймлайн
     timelineBar.innerHTML = '';
     for (let h = 0; h < 24; h++) {
         const hourCol = document.createElement('div');
@@ -228,7 +261,7 @@ function renderSchedule() {
         timelineBar.appendChild(hourCol);
     }
 
-    // Рендер списку
+    // Список
     outageIntervalsEl.innerHTML = '';
     if (intervals.length === 0) {
         outageIntervalsEl.innerHTML = `<p class="text-xs text-slate-400 col-span-2 py-2">Сьогодні графік не завантажено.</p>`;
@@ -253,7 +286,65 @@ function renderSchedule() {
     }
 }
 
-// Модальне вікно
+// Модаль пошуку черги
+findQueueBtn.addEventListener('click', () => {
+    findQueueModal.classList.remove('hidden');
+    findQueueAddressInput.focus();
+});
+
+closeFindQueueBtn.addEventListener('click', () => {
+    findQueueModal.classList.add('hidden');
+    findQueueResult.classList.add('hidden');
+    findQueueError.classList.add('hidden');
+    useFoundQueueBtn.classList.add('hidden');
+});
+
+searchQueueBtn.addEventListener('click', () => {
+    const location = findQueueLocationSelect.value;
+    const address = findQueueAddressInput.value;
+
+    findQueueResult.classList.add('hidden');
+    findQueueError.classList.add('hidden');
+    useFoundQueueBtn.classList.add('hidden');
+
+    if (!address.trim()) {
+        findQueueErrorText.textContent = 'Введіть адресу';
+        findQueueError.classList.remove('hidden');
+        return;
+    }
+
+    const queue = findQueueByAddress(address, location);
+
+    if (queue) {
+        foundQueueForApply = { location, queue };
+        findQueueResultText.textContent = queue;
+        findQueueResult.classList.remove('hidden');
+        useFoundQueueBtn.classList.remove('hidden');
+    } else {
+        findQueueErrorText.textContent = 'Адреса не знайдена. Спробуйте іншу назву вулиці або району.';
+        findQueueError.classList.remove('hidden');
+    }
+});
+
+useFoundQueueBtn.addEventListener('click', () => {
+    if (foundQueueForApply) {
+        userConfig.city = foundQueueForApply.location;
+        userConfig.queue = foundQueueForApply.queue;
+
+        localStorage.setItem('svitlo_city', userConfig.city);
+        localStorage.setItem('svitlo_queue', userConfig.queue);
+
+        citySelect.value = userConfig.city;
+        queueSelect.value = userConfig.queue;
+
+        updateLocationLabel();
+        renderSchedule();
+
+        findQueueModal.classList.add('hidden');
+    }
+});
+
+// Модаль налаштувань
 settingsBtn.addEventListener('click', () => settingsModal.classList.remove('hidden'));
 closeModalBtn.addEventListener('click', () => settingsModal.classList.add('hidden'));
 settingsModal.addEventListener('click', (e) => {
@@ -273,3 +364,44 @@ saveSettingsBtn.addEventListener('click', () => {
 });
 
 document.addEventListener('DOMContentLoaded', initApp);
+
+// Функція для оновлення часу останнього оновлення
+function updateLastUpdateDisplay() {
+    if (!lastDataUpdateTime) {
+        lastUpdateTimeEl.textContent = 'ніколи';
+        return;
+    }
+
+    const now = new Date();
+    const diffMs = now - lastDataUpdateTime;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+
+    if (diffMins < 1) {
+        lastUpdateTimeEl.textContent = 'щойно';
+    } else if (diffMins < 60) {
+        lastUpdateTimeEl.textContent = `${diffMins}м тому`;
+    } else if (diffHours < 24) {
+        lastUpdateTimeEl.textContent = `${diffHours}г тому`;
+    } else {
+        lastUpdateTimeEl.textContent = lastDataUpdateTime.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+    }
+}
+
+// Кнопка оновлення
+refreshBtn.addEventListener('click', async () => {
+    refreshIcon.style.transform = 'rotate(0deg)';
+    refreshIcon.style.transition = 'transform 0.6s linear';
+    refreshIcon.style.transform = 'rotate(360deg)';
+
+    await fetchSchedules();
+    renderSchedule();
+
+    setTimeout(() => {
+        refreshIcon.style.transition = 'none';
+        refreshIcon.style.transform = 'rotate(0deg)';
+    }, 600);
+});
+
+// Оновлення часу кожну хвилину
+setInterval(updateLastUpdateDisplay, 60000);

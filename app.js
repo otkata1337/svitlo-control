@@ -31,6 +31,8 @@ function getNextOutage(intervals) {
 function render() {
     if (!selectedQueue) return;
 
+    console.log('Rendering queue:', selectedQueue);
+
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
     const todayData = schedules[dateStr] || {};
@@ -39,19 +41,23 @@ function render() {
     const isOff = isOutageNow(intervals);
     const nextOutage = getNextOutage(intervals);
 
+    // Обновить статус
     const sb = document.getElementById('status-badge');
     const si = document.getElementById('status-icon');
     const ss = document.getElementById('status-subtitle');
-    const sc = document.getElementById('status-card');
+    const sic = document.getElementById('status-icon-container');
 
-    if (!sb || !si || !ss || !sc) return;
+    if (!sb || !si || !ss || !sic) {
+        console.error('Status elements missing');
+        return;
+    }
 
     if (isOff) {
         sb.textContent = 'Світло відключено!';
         sb.className = 'status-badge off';
         si.textContent = '🔌';
         ss.textContent = 'Світло відсутнє за розкладом';
-        sc.className = 'glass-effect rounded-3xl p-8 sm:p-10 border-2 border-red-500/30';
+        sic.style.borderColor = 'rgba(239, 68, 68, 0.3)';
     } else {
         sb.textContent = 'Світло є';
         sb.className = 'status-badge on';
@@ -59,21 +65,41 @@ function render() {
         ss.textContent = nextOutage
             ? `Наступне о ${String(nextOutage.h).padStart(2, '0')}:${String(nextOutage.m).padStart(2, '0')}`
             : 'Відключень сьогодні не буде';
-        sc.className = 'glass-effect rounded-3xl p-8 sm:p-10 border-2 border-blue-500/20';
+        sic.style.borderColor = 'rgba(59, 130, 246, 0.3)';
     }
 
+    // Обновить дату
     const dateEl = document.getElementById('today-date-str');
     if (dateEl) dateEl.textContent = now.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' });
 
+    // Обновить время
     const timeEl = document.getElementById('update-time');
     if (timeEl) timeEl.textContent = now.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
 
+    // Обновить текущую чергу
     const labelEl = document.getElementById('current-location-label');
     if (labelEl) labelEl.textContent = `Черга ${selectedQueue}`;
+
+    // Обновить следующее событие
+    const nextTimeEl = document.getElementById('next-event-time');
+    const nextDescEl = document.getElementById('next-event-desc');
+    if (nextTimeEl && nextDescEl) {
+        if (nextOutage) {
+            nextTimeEl.textContent = `${String(nextOutage.h).padStart(2, '0')}:${String(nextOutage.m).padStart(2, '0')}`;
+            const hours = Math.floor(nextOutage.duration / 60);
+            const mins = nextOutage.duration % 60;
+            nextDescEl.textContent = `На ${hours}г ${mins}м`;
+        } else {
+            nextTimeEl.textContent = '—';
+            nextDescEl.textContent = 'Немає подій';
+        }
+    }
 
     renderTimeline(intervals);
     renderOutages(intervals);
     renderQueues(todayData);
+
+    console.log('✅ Render complete');
 }
 
 function renderTimeline(intervals) {
@@ -171,7 +197,7 @@ async function loadSchedules() {
     }
 }
 
-function init() {
+async function init() {
     console.log('=== Init ===');
 
     const modal = document.getElementById('first-launch-modal');
@@ -188,28 +214,27 @@ function init() {
     }
 
     // Завантажити дані
-    loadSchedules().then(() => {
-        console.log('Data loaded, selectedQueue:', selectedQueue);
+    await loadSchedules();
+    console.log('Data loaded, selectedQueue:', selectedQueue);
 
-        if (selectedQueue) {
-            // Черга вже обрана
+    if (selectedQueue) {
+        // Черга вже обрана
+        modal.style.display = 'none';
+        render();
+    } else {
+        // Показати модальне вікно
+        select.onchange = () => {
+            btn.disabled = !select.value;
+        };
+
+        btn.onclick = () => {
+            selectedQueue = select.value;
+            localStorage.setItem('svitlo_queue', selectedQueue);
             modal.style.display = 'none';
+            if (settingsBtn) settingsBtn.style.display = 'block';
             render();
-        } else {
-            // Показати модальне вікно
-            select.onchange = () => {
-                btn.disabled = !select.value;
-            };
-
-            btn.onclick = () => {
-                selectedQueue = select.value;
-                localStorage.setItem('svitlo_queue', selectedQueue);
-                modal.style.display = 'none';
-                if (settingsBtn) settingsBtn.style.display = 'block';
-                render();
-            };
-        }
-    });
+        };
+    }
 
     // Налаштування
     if (settingsBtn && settingsModal && saveBtn && queueSelect) {
@@ -234,6 +259,8 @@ function init() {
             render();
         };
     }
+
+    console.log('=== Init complete ===');
 
     setInterval(render, 60000);
     setInterval(loadSchedules, 300000);

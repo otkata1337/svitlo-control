@@ -4,7 +4,12 @@ const API_BASE_URL = './schedules_cache.json';
 const ALL_QUEUES = ['1.1', '1.2', '2.1', '2.2', '3.1', '3.2', '4.1', '4.2', '5.1', '5.2', '6.1', '6.2'];
 
 let schedules = {};
-let selectedQueue = localStorage.getItem('svitlo_queue') || '3.1';
+let selectedQueue = localStorage.getItem('svitlo_queue');
+
+// Перевірити чи першого запуск
+function isFirstLaunch() {
+    return !selectedQueue;
+}
 
 // Простая функция: есть ли отключение в этот момент
 function isOutageNow(intervals) {
@@ -38,6 +43,8 @@ function getNextOutage(intervals) {
 
 // Основное отображение
 function render() {
+    if (!selectedQueue) return;
+
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
     const todayData = schedules[dateStr] || {};
@@ -223,11 +230,30 @@ async function loadSchedules() {
     render();
 }
 
+// Першого запуск — вибір черги
+function setupFirstLaunch() {
+    if (!isFirstLaunch()) return;
+
+    const modal = document.getElementById('first-launch-modal');
+    const select = document.getElementById('first-queue-select');
+    const btn = document.getElementById('first-launch-btn');
+
+    select.addEventListener('change', () => {
+        btn.disabled = !select.value;
+    });
+
+    btn.addEventListener('click', () => {
+        selectedQueue = select.value;
+        localStorage.setItem('svitlo_queue', selectedQueue);
+        modal.style.display = 'none';
+        loadSchedules();
+    });
+}
+
 // Модальне вікно налаштувань
 function setupModal() {
     const btn = document.getElementById('settings-btn');
     const modal = document.getElementById('settings-modal');
-    const closeBtn = document.getElementById('close-modal-btn');
     const saveBtn = document.getElementById('save-settings-btn');
     const queueSelect = document.getElementById('queue-select');
 
@@ -235,11 +261,6 @@ function setupModal() {
         queueSelect.value = selectedQueue;
         modal.classList.remove('hidden', 'opacity-0');
         modal.classList.add('opacity-100');
-    });
-
-    closeBtn.addEventListener('click', () => {
-        modal.classList.add('opacity-0');
-        setTimeout(() => modal.classList.add('hidden'), 300);
     });
 
     modal.addEventListener('click', (e) => {
@@ -260,8 +281,11 @@ function setupModal() {
 
 // Запуск
 window.addEventListener('load', () => {
+    setupFirstLaunch();
     setupModal();
-    loadSchedules();
+    if (!isFirstLaunch()) {
+        loadSchedules();
+    }
     setInterval(render, 60000); // Оновлювати щохвилини
     setInterval(loadSchedules, 300000); // Завантажити щих 5 хвилин
 });

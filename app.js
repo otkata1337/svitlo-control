@@ -29,7 +29,10 @@ function getNextOutage(intervals) {
 }
 
 function render() {
-    if (!selectedQueue) return;
+    if (!selectedQueue) {
+        console.log('No queue, skipping render');
+        return;
+    }
 
     console.log('Rendering queue:', selectedQueue);
 
@@ -47,8 +50,14 @@ function render() {
     const ss = document.getElementById('status-subtitle');
     const sic = document.getElementById('status-icon-container');
 
+    if (!sb) console.error('status-badge not found');
+    if (!si) console.error('status-icon not found');
+    if (!ss) console.error('status-subtitle not found');
+    if (!sic) console.error('status-icon-container not found');
+
     if (!sb || !si || !ss || !sic) {
-        console.error('Status elements missing');
+        console.error('Some status elements missing, retrying in 200ms');
+        setTimeout(render, 200);
         return;
     }
 
@@ -220,7 +229,8 @@ async function init() {
     if (selectedQueue) {
         // Черга вже обрана
         modal.style.display = 'none';
-        render();
+        // Задержка для гарантії що DOM готовий
+        setTimeout(() => render(), 300);
     } else {
         // Показати модальне вікно
         select.onchange = () => {
@@ -232,7 +242,8 @@ async function init() {
             localStorage.setItem('svitlo_queue', selectedQueue);
             modal.style.display = 'none';
             if (settingsBtn) settingsBtn.style.display = 'block';
-            render();
+            // Задержка перед render
+            setTimeout(() => render(), 100);
         };
     }
 
@@ -256,7 +267,7 @@ async function init() {
             localStorage.setItem('svitlo_queue', selectedQueue);
             settingsModal.classList.add('opacity-0');
             setTimeout(() => settingsModal.classList.add('hidden'), 300);
-            render();
+            setTimeout(() => render(), 100);
         };
     }
 

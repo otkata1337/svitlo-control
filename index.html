@@ -15,7 +15,7 @@
 
     <!-- PWA -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#0a0e27">
     <link rel="apple-touch-icon" href="icon-192.png">
 
     <style>
@@ -24,7 +24,7 @@
         }
 
         body {
-            background: linear-gradient(135deg, #0f172a 0%, #1a202c 50%, #0f172a 100%);
+            background: linear-gradient(135deg, #0a0e27 0%, #1a0033 50%, #0f0623 100%);
             background-attachment: fixed;
         }
 
@@ -34,14 +34,14 @@
             height: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: rgba(15, 23, 42, 0.5);
+            background: rgba(10, 14, 39, 0.5);
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(59, 130, 246, 0.5);
+            background: rgba(168, 85, 247, 0.6);
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(59, 130, 246, 0.8);
+            background: rgba(168, 85, 247, 0.9);
         }
 
         /* Animations */
@@ -50,27 +50,13 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
         @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3), 0 0 40px rgba(59, 130, 246, 0.1); }
-            50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.5), 0 0 60px rgba(59, 130, 246, 0.2); }
-        }
-
-        @keyframes shimmer {
-            0% { background-position: -1000px 0; }
-            100% { background-position: 1000px 0; }
+            0%, 100% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.4), 0 0 40px rgba(168, 85, 247, 0.2); }
+            50% { box-shadow: 0 0 30px rgba(168, 85, 247, 0.6), 0 0 60px rgba(168, 85, 247, 0.3); }
         }
 
         .animate-fade-in {
             animation: fadeIn 0.5s ease-out forwards;
-        }
-
-        .animate-slide-right {
-            animation: slideInRight 0.5s ease-out forwards;
         }
 
         .glow {
@@ -79,22 +65,25 @@
 
         .queue-card {
             @apply relative overflow-hidden rounded-2xl border transition-all duration-300 cursor-pointer;
-            @apply hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20;
+            @apply hover:scale-105 hover:shadow-2xl;
         }
 
         .queue-card.active {
-            @apply border-blue-500/50 shadow-lg shadow-blue-500/30;
-            background: linear-gradient(135deg, rgba(30, 58, 138, 0.3) 0%, rgba(59, 130, 246, 0.1) 100%);
+            @apply border-purple-400/70 shadow-lg;
+            box-shadow: 0 0 20px rgba(192, 132, 250, 0.4);
+            background: linear-gradient(135deg, rgba(109, 40, 217, 0.3) 0%, rgba(168, 85, 247, 0.15) 100%);
         }
 
         .queue-card.off-status {
-            @apply border-red-500/30;
-            background: linear-gradient(135deg, rgba(127, 29, 29, 0.2) 0%, rgba(220, 38, 38, 0.05) 100%);
+            @apply border-red-500/50;
+            background: linear-gradient(135deg, rgba(127, 29, 29, 0.3) 0%, rgba(220, 38, 38, 0.1) 100%);
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
         }
 
         .queue-card.on-status {
-            @apply border-emerald-500/30;
-            background: linear-gradient(135deg, rgba(4, 120, 87, 0.2) 0%, rgba(16, 185, 129, 0.05) 100%);
+            @apply border-cyan-500/50;
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(34, 211, 238, 0.08) 100%);
+            box-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
         }
 
         .status-badge {
@@ -102,11 +91,11 @@
         }
 
         .status-badge.on {
-            @apply bg-emerald-500/20 text-emerald-300 border border-emerald-500/30;
+            @apply bg-cyan-500/30 text-cyan-200 border border-cyan-400/50;
         }
 
         .status-badge.off {
-            @apply bg-red-500/20 text-red-300 border border-red-500/30;
+            @apply bg-red-500/30 text-red-200 border border-red-400/50;
         }
 
         .time-slot {
@@ -114,7 +103,7 @@
         }
 
         .time-slot.on {
-            @apply bg-emerald-500 hover:bg-emerald-400;
+            @apply bg-cyan-400 hover:bg-cyan-300;
         }
 
         .time-slot.off {
@@ -122,53 +111,36 @@
         }
 
         .header-gradient {
-            @apply bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800;
+            background: linear-gradient(to right, #6d28d9 0%, #8b5cf6 50%, #a855f7 100%);
         }
 
         .glass-effect {
-            @apply bg-slate-900/40 backdrop-blur-md border border-slate-700/50;
-        }
-
-        /* Modal styles */
-        .modal {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.7);
+            @apply bg-slate-950/30 border border-purple-500/20;
             backdrop-filter: blur(12px);
-            z-index: 50;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-            transition: opacity 0.3s;
         }
 
-        .modal.hidden {
-            display: none;
-        }
-
-        .modal.hidden-opacity {
-            opacity: 0;
+        .card-glow {
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.15);
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col text-slate-100">
 
     <!-- Header -->
-    <header class="header-gradient border-b border-blue-500/20 sticky top-0 z-50 shadow-2xl">
+    <header class="header-gradient border-b border-purple-400/20 sticky top-0 z-50 shadow-2xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-2xl bg-yellow-400/20 border border-yellow-400/40 flex items-center justify-center text-2xl shadow-lg">
+                    <div class="w-12 h-12 rounded-2xl bg-purple-500/30 border border-purple-400/50 flex items-center justify-center text-2xl shadow-lg glow">
                         ⚡
                     </div>
                     <div>
                         <h1 class="text-2xl font-black tracking-tight text-white">СвітлоКонтроль</h1>
-                        <p class="text-xs text-blue-200 font-medium">Черкаська область</p>
+                        <p class="text-xs text-purple-200 font-medium">Черкаська область</p>
                     </div>
                 </div>
 
-                <button id="settings-btn" class="group flex items-center gap-2 px-4 py-2 rounded-xl glass-effect hover:bg-slate-800/60 transition-all">
+                <button id="settings-btn" class="group flex items-center gap-2 px-4 py-2 rounded-xl glass-effect hover:bg-purple-500/20 transition-all border-purple-400/30">
                     <span class="text-xl group-hover:rotate-90 transition-transform duration-300">⚙️</span>
                     <span id="current-location-label" class="text-sm font-semibold hidden sm:inline">Черга 3.1</span>
                 </button>
@@ -181,10 +153,10 @@
 
         <!-- Status Hero Section -->
         <section class="mb-10 animate-fade-in">
-            <div class="glass-effect rounded-3xl p-8 sm:p-10 border-2 border-blue-500/20">
+            <div class="glass-effect rounded-3xl p-8 sm:p-10 border-2 border-purple-400/30 card-glow">
                 <div class="flex items-center justify-between gap-6 flex-wrap">
                     <div class="flex items-start gap-4">
-                        <div id="status-icon-container" class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl glow border border-blue-500/30">
+                        <div id="status-icon-container" class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl glow border border-purple-400/40" style="background: linear-gradient(135deg, rgba(109, 40, 217, 0.2) 0%, rgba(168, 85, 247, 0.1) 100%);">
                             <span id="status-icon">💡</span>
                         </div>
                         <div>
@@ -199,7 +171,7 @@
 
                     <div class="text-center sm:text-right">
                         <p class="text-xs text-slate-400 uppercase font-semibold tracking-wider mb-2">Наступна подія</p>
-                        <p id="next-event-time" class="text-3xl font-black font-mono text-blue-400 mb-1">--:--</p>
+                        <p id="next-event-time" class="text-3xl font-black font-mono text-purple-300 mb-1">--:--</p>
                         <p id="next-event-desc" class="text-sm text-slate-400">Очікування даних</p>
                     </div>
                 </div>
@@ -208,14 +180,14 @@
 
         <!-- Timeline Section -->
         <section class="mb-10 animate-fade-in" style="animation-delay: 0.1s;">
-            <div class="glass-effect rounded-2xl p-6 border-2 border-slate-700/50">
+            <div class="glass-effect rounded-2xl p-6 border-2 border-purple-500/20 card-glow">
                 <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
                     <span class="text-2xl">📊</span> Графік на <span id="today-date-str">--.--.2026</span>
                 </h3>
 
                 <!-- Timeline Bar -->
                 <div class="space-y-2 mb-4">
-                    <div id="timeline-bar" class="flex gap-0.5 bg-slate-950/50 p-2 rounded-xl border border-slate-700/50 h-20">
+                    <div id="timeline-bar" class="flex gap-0.5 bg-slate-950/70 p-2 rounded-xl border border-purple-500/30 h-20">
                         <!-- Rendered via JS -->
                     </div>
                     <div class="grid grid-cols-9 text-[10px] sm:text-xs text-slate-400 px-1 font-mono font-medium">
@@ -234,7 +206,7 @@
                 <!-- Legend -->
                 <div class="flex flex-wrap gap-4 text-sm">
                     <div class="flex items-center gap-2">
-                        <div class="w-4 h-4 rounded bg-emerald-500"></div>
+                        <div class="w-4 h-4 rounded bg-cyan-400"></div>
                         <span class="text-slate-300">Світло є</span>
                     </div>
                     <div class="flex items-center gap-2">
@@ -252,7 +224,7 @@
             </h3>
 
             <div id="outage-intervals" class="space-y-2">
-                <div class="glass-effect rounded-lg p-4 text-center text-slate-400 border border-slate-700/50">
+                <div class="glass-effect rounded-lg p-4 text-center text-slate-400 border border-purple-500/20">
                     Завантаження даних...
                 </div>
             </div>
@@ -272,7 +244,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-slate-800 bg-slate-950/50 mt-10">
+    <footer class="border-t border-purple-500/20 bg-slate-950/50 mt-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 text-center text-sm text-slate-400">
             <p>📌 Дані від ГПВ AT "Черкасиобленерго"</p>
             <p class="mt-2 text-xs">💾 Працює офлайн • 🔄 Оновлюється кожну годину</p>
@@ -280,10 +252,10 @@
     </footer>
 
     <!-- Settings Modal -->
-    <div id="settings-modal" class="modal hidden hidden-opacity">
-        <div class="glass-effect rounded-3xl max-w-md w-full p-8 border-2 border-blue-500/20">
+    <div id="settings-modal" class="fixed inset-0 bg-black/50 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="glass-effect rounded-3xl max-w-md w-full p-8 border-2 border-purple-400/30">
             <h2 class="text-2xl font-bold mb-6">📌 Вибери чергу</h2>
-            <select id="queue-select" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 transition mb-4">
+            <select id="queue-select" class="w-full bg-slate-950 border border-purple-400/50 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-purple-300 transition mb-4">
                 <option value="1.1">Черга 1.1</option>
                 <option value="1.2">Черга 1.2</option>
                 <option value="2.1">Черга 2.1</option>
@@ -297,18 +269,18 @@
                 <option value="6.1">Черга 6.1</option>
                 <option value="6.2">Черга 6.2</option>
             </select>
-            <button id="save-settings-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-blue-600/30">
+            <button id="save-settings-btn" class="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-purple-600/30">
                 Готово ✓
             </button>
         </div>
     </div>
 
     <!-- First Launch Modal -->
-    <div id="first-launch-modal" class="modal">
-        <div class="glass-effect rounded-3xl max-w-md w-full p-8 border-2 border-blue-500/30">
+    <div id="first-launch-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="glass-effect rounded-3xl max-w-md w-full p-8 border-2 border-purple-400/40">
             <h2 class="text-3xl font-bold mb-2 text-center">👋 Привіт!</h2>
             <p class="text-slate-300 text-center mb-6">Вибери свою чергу в Черкаській області</p>
-            <select id="first-queue-select" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition mb-4">
+            <select id="first-queue-select" class="w-full bg-slate-950 border border-purple-400/50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-purple-300 transition mb-4">
                 <option value="">Виберіть чергу...</option>
                 <option value="1.1">Черга 1.1</option>
                 <option value="1.2">Черга 1.2</option>
@@ -323,7 +295,7 @@
                 <option value="6.1">Черга 6.1</option>
                 <option value="6.2">Черга 6.2</option>
             </select>
-            <button id="first-launch-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-blue-600/30" disabled>
+            <button id="first-launch-btn" class="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-purple-600/30" disabled>
                 Почнемо →
             </button>
         </div>

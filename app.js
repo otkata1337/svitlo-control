@@ -6,10 +6,6 @@ const ALL_QUEUES = ['1.1', '1.2', '2.1', '2.2', '3.1', '3.2', '4.1', '4.2', '5.1
 let schedules = {};
 let selectedQueue = localStorage.getItem('svitlo_queue');
 
-function isFirstLaunch() {
-    return !selectedQueue;
-}
-
 function isOutageNow(intervals) {
     const now = new Date();
     const totalMinutes = now.getHours() * 60 + now.getMinutes();
@@ -211,65 +207,90 @@ async function loadSchedules() {
     render();
 }
 
-function setupFirstLaunch() {
-    if (!isFirstLaunch()) return;
+function hideFirstLaunchModal() {
+    const modal = document.getElementById('first-launch-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
 
+function showFirstLaunchModal() {
     const modal = document.getElementById('first-launch-modal');
     const select = document.getElementById('first-queue-select');
     const btn = document.getElementById('first-launch-btn');
-    const settingsBtn = document.getElementById('settings-btn');
 
-    if (settingsBtn) settingsBtn.style.display = 'none';
+    if (!modal) return;
 
-    select.addEventListener('change', () => {
-        btn.disabled = !select.value;
+    select.addEventListener('change', (e) => {
+        btn.disabled = !e.target.value;
     });
 
-    btn.addEventListener('click', async () => {
-        selectedQueue = select.value;
-        localStorage.setItem('svitlo_queue', selectedQueue);
-        modal.style.display = 'none';
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const queue = select.value;
 
-        if (settingsBtn) settingsBtn.style.display = 'block';
+        if (!queue) return;
 
-        await loadSchedules();
+        selectedQueue = queue;
+        localStorage.setItem('svitlo_queue', queue);
+
+        console.log('Queue saved:', selectedQueue);
+
+        hideFirstLaunchModal();
+        loadSchedules();
     });
 }
 
-function setupModal() {
-    const btn = document.getElementById('settings-btn');
-    const modal = document.getElementById('settings-modal');
+function initApp() {
+    // Якщо черга вже обрана, завантажити дані одразу
+    if (selectedQueue) {
+        hideFirstLaunchModal();
+        loadSchedules();
+    } else {
+        showFirstLaunchModal();
+    }
+
+    // Налаштування
+    const settingsBtn = document.getElementById('settings-btn');
+    const settingsModal = document.getElementById('settings-modal');
     const saveBtn = document.getElementById('save-settings-btn');
     const queueSelect = document.getElementById('queue-select');
 
-    btn.addEventListener('click', () => {
-        queueSelect.value = selectedQueue;
-        modal.classList.remove('hidden', 'opacity-0');
-        modal.classList.add('opacity-100');
-    });
-
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.classList.add('opacity-0');
-            setTimeout(() => modal.classList.add('hidden'), 300);
-        }
-    });
-
-    saveBtn.addEventListener('click', () => {
-        selectedQueue = queueSelect.value;
-        localStorage.setItem('svitlo_queue', selectedQueue);
-        modal.classList.add('opacity-0');
-        setTimeout(() => modal.classList.add('hidden'), 300);
-        render();
-    });
-}
-
-window.addEventListener('load', () => {
-    setupFirstLaunch();
-    setupModal();
-    if (!isFirstLaunch()) {
-        loadSchedules();
+    if (settingsBtn) {
+        settingsBtn.addEventListener('click', () => {
+            queueSelect.value = selectedQueue;
+            settingsModal.classList.remove('hidden', 'opacity-0');
+            settingsModal.classList.add('opacity-100');
+        });
     }
+
+    if (settingsModal) {
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) {
+                settingsModal.classList.add('opacity-0');
+                setTimeout(() => settingsModal.classList.add('hidden'), 300);
+            }
+        });
+    }
+
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            selectedQueue = queueSelect.value;
+            localStorage.setItem('svitlo_queue', selectedQueue);
+            settingsModal.classList.add('opacity-0');
+            setTimeout(() => settingsModal.classList.add('hidden'), 300);
+            render();
+        });
+    }
+
+    // Оновлювати щохвилини
     setInterval(render, 60000);
     setInterval(loadSchedules, 300000);
-});
+}
+
+// Запуск коли DOM готовий
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}

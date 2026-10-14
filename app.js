@@ -301,8 +301,15 @@ async function initApp() {
 }
 
 // Запуск коли DOM готовий
+console.log('📄 readyState:', document.readyState);
+
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initApp);
+    console.log('⏳ DOM ще не готовий, чекаємо...');
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('✅ DOMContentLoaded запущено');
+        initApp();
+    });
 } else {
+    console.log('✅ DOM вже готовий, запускаємо одразу');
     initApp();
 }

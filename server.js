@@ -1,13 +1,13 @@
-// server.js — Оновлений сервер для СвітлоКонтроль
+// server.js — Оновлений сервер із залізничним парсером
 
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { updateScheduleAutomatically } = require('./parser');
 
 const PORT = process.env.PORT || 3000;
 const SCHEDULE_FILE = path.join(__dirname, 'current-schedule.json');
 
-// Читання актуального графіку з файлу
 function getCurrentSchedule() {
   try {
     if (fs.existsSync(SCHEDULE_FILE)) {
@@ -18,7 +18,6 @@ function getCurrentSchedule() {
     console.log('⚠ Помилка читання current-schedule.json:', e.message);
   }
 
-  // Дефолт, якщо файл пошкоджено
   return {
     date: new Date().toISOString().split('T')[0],
     updated_at: new Date().toISOString(),
@@ -30,7 +29,6 @@ function getCurrentSchedule() {
 
 // HTTP Сервер
 const server = http.createServer((req, res) => {
-  // CORS заголовки
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -42,7 +40,6 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // API Роути
   if (req.url === '/api/schedules' || req.url === '/api/schedules/cherkasy') {
     const scheduleData = getCurrentSchedule();
     res.writeHead(200);
@@ -64,11 +61,16 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // 404
   res.writeHead(404);
   res.end(JSON.stringify({ error: 'Not found' }));
 });
 
 server.listen(PORT, () => {
   console.log(`\n⚡ СвітлоКонтроль API Сервер запущено на порту ${PORT}`);
+
+  // Запускаємо парсер при стартові
+  updateScheduleAutomatically();
+
+  // Запускаємо перевірку кожну годину
+  setInterval(updateScheduleAutomatically, 3600000);
 });

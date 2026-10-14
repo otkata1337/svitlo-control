@@ -207,34 +207,62 @@ async function loadSchedules() {
 }
 
 async function initApp() {
-    // Завантажити дані ДО всього
-    await loadSchedules();
+    console.log('🚀 Запуск додатку...');
 
-    // Якщо черга НЕ обрана, показати модальне вікно
+    // Завантажити дані
+    await loadSchedules();
+    console.log('📊 Дані завантажені');
+
+    // Якщо черга НЕ обрана
     if (!selectedQueue) {
+        console.log('⚠️ Черга не обрана, показуємо модальне вікно');
+
         const select = document.getElementById('first-queue-select');
         const btn = document.getElementById('first-launch-btn');
         const modal = document.getElementById('first-launch-modal');
 
-        if (select && btn && modal) {
-            select.addEventListener('change', () => {
-                btn.disabled = !select.value;
-            });
+        console.log('Select:', select, 'Btn:', btn, 'Modal:', modal);
 
-            btn.addEventListener('click', () => {
-                const queue = select.value;
-                if (!queue) return;
-
-                selectedQueue = queue;
-                localStorage.setItem('svitlo_queue', queue);
-                modal.style.display = 'none';
-                render();
-            });
+        if (!select || !btn || !modal) {
+            console.error('❌ Елементи не знайдені!');
+            return;
         }
+
+        // Активувати кнопку при зміні селекту
+        select.addEventListener('change', (e) => {
+            console.log('Вибрано:', e.target.value);
+            btn.disabled = !e.target.value;
+        });
+
+        // Обробка клику кнопки
+        btn.addEventListener('click', (e) => {
+            console.log('🔘 Клік на кнопку');
+            e.preventDefault();
+
+            const queue = select.value;
+            console.log('Вибрана черга:', queue);
+
+            if (!queue) {
+                console.log('❌ Черга не вибрана');
+                return;
+            }
+
+            selectedQueue = queue;
+            localStorage.setItem('svitlo_queue', queue);
+            console.log('✅ Черга збережена:', selectedQueue);
+
+            modal.remove();
+            console.log('🔚 Модальне вікно видалено');
+
+            render();
+            console.log('📱 Контент відрисований');
+        });
     } else {
-        // Черга вже обрана, приховати модальне вікно й показати дані
+        console.log('✅ Черга вже обрана:', selectedQueue);
         const modal = document.getElementById('first-launch-modal');
-        if (modal) modal.style.display = 'none';
+        if (modal) {
+            modal.remove();
+        }
         render();
     }
 

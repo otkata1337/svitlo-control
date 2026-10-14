@@ -1,153 +1,267 @@
-// app.js — СвітлоКонтроль (Мттєвий старт + Підказка пошуку + Оптимізація)
+// app.js — СвітлоКонтроль (Простий інтерфейс)
 
 const API_BASE_URL = './schedules_cache.json';
-
-let userConfig = {
-    city: localStorage.getItem('svitlo_city') || 'smila',
-    queue: localStorage.getItem('svitlo_queue') || '3.1'
-};
+const ALL_QUEUES = ['1.1', '1.2', '2.1', '2.2', '3.1', '3.2', '4.1', '4.2', '5.1', '5.2', '6.1', '6.2'];
 
 let schedules = {};
-let foundQueueForApply = null;
+let selectedQueue = localStorage.getItem('svitlo_queue') || '3.1';
 
-// DOM Elements
-const findQueueBtn = document.getElementById('find-queue-btn');
-const findQueueModal = document.getElementById('find-queue-modal');
-const closeFindQueueBtn = document.getElementById('close-find-queue-btn');
-const findQueueLocationSelect = document.getElementById('find-queue-location');
-const findQueueAddressInput = document.getElementById('find-queue-address');
-const searchQueueBtn = document.getElementById('search-queue-btn');
-const findQueueResult = document.getElementById('find-queue-result');
-const findQueueResultText = document.getElementById('find-queue-result-text');
-const findQueueError = document.getElementById('find-queue-error');
-const findQueueErrorText = document.getElementById('find-queue-error-text');
-const useFoundQueueBtn = document.getElementById('use-found-queue-btn');
+// Простая функция: есть ли отключение в этот момент
+function isOutageNow(intervals) {
+    const now = new Date();
+    const totalMinutes = now.getHours() * 60 + now.getMinutes();
 
-const settingsBtn = document.getElementById('settings-btn');
-const settingsModal = document.getElementById('settings-modal');
-const closeModalBtn = document.getElementById('close-modal-btn');
-const saveSettingsBtn = document.getElementById('save-settings-btn');
-const citySelect = document.getElementById('city-select');
-const queueSelect = document.getElementById('queue-select');
-const currentLocationLabel = document.getElementById('current-location-label');
-
-const statusCard = document.getElementById('status-card');
-const statusGlow = document.getElementById('status-glow');
-const statusBadge = document.getElementById('status-badge');
-const statusIconContainer = document.getElementById('status-icon-container');
-const statusIcon = document.getElementById('status-icon');
-const statusTitle = document.getElementById('status-title');
-const statusSubtitle = document.getElementById('status-subtitle');
-const updateTime = document.getElementById('update-time');
-const nextEventTime = document.getElementById('next-event-time');
-const nextEventDesc = document.getElementById('next-event-desc');
-
-const todayDateStr = document.getElementById('today-date-str');
-const timelineBar = document.getElementById('timeline-bar');
-const outageIntervalsEl = document.getElementById('outage-intervals');
-
-// Швидке завантаження графіків напряму з файлу кешу у репозиторії
-async function fetchSchedules() {
-    const cached = localStorage.getItem('svitlo_schedules_cache');
-    if (cached) {
-        try {
-            schedules = JSON.parse(cached);
-        } catch(e) {}
-    }
-
-    if (Object.keys(schedules).length === 0) {
-        schedules = getDefaultSchedules();
-    }
-
-    renderSchedule();
-
-    try {
-        const response = await fetch(`${API_BASE_URL}?t=${Date.now()}`, { signal: AbortSignal.timeout(5000) });
-        if (response.ok) {
-            const data = await response.json();
-            // Якщо файл містить дані безпосередньо або у форматі {success: true, data: ...}
-            const actualData = data.success && data.data ? data.data : data;
-            if (actualData && Object.keys(actualData).length > 0) {
-                schedules = actualData;
-                localStorage.setItem('svitlo_schedules_cache', JSON.stringify(schedules));
-                renderSchedule();
-                console.log('✅ Графіки успішно оновлено з schedules_cache.json');
-            }
+    for (const [sH, sM, eH, eM] of intervals) {
+        const start = sH * 60 + sM;
+        const end = eH * 60 + eM;
+        if (totalMinutes >= start && totalMinutes < end) {
+            return true;
         }
-    } catch (error) {
-        console.warn('⚠ Не вдалося оновити з файлу, використовуємо локальні дані.');
     }
+    return false;
 }
 
-function getDefaultSchedules() {
-    const today = new Date();
-    const result = {};
-    const queues = ['1.1', '1.2', '2.1', '2.2', '3.1', '3.2', '4.1', '4.2', '5.1', '5.2', '6.1', '6.2'];
-    const patterns = {
-        1: [[6, 0, 8, 0], [12, 0, 14, 0], [18, 0, 20, 0]],
-        2: [[8, 0, 10, 0], [14, 0, 16, 0], [20, 0, 22, 0]],
-        3: [[7, 0, 11, 0], [15, 0, 19, 0]],
-        4: [[10, 0, 14, 0], [18, 0, 22, 0]],
-        5: [[6, 0, 9, 0], [13, 0, 16, 0], [20, 0, 23, 0]],
-        6: [[9, 0, 12, 0], [16, 0, 19, 0]]
-    };
+// Найти следующее отключение
+function getNextOutage(intervals) {
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-    for (let i = 0; i < 7; i++) {
-        const date = new Date(today);
-        date.setDate(date.getDate() + i);
-        const dateStr = date.toISOString().split('T')[0];
-
-        result[dateStr] = {};
-        queues.forEach(queue => {
-            const queueGroup = Math.floor(parseFloat(queue));
-            result[dateStr][queue] = patterns[queueGroup] || [[8, 0, 12, 0], [18, 0, 21, 0]];
-        });
+    for (const [sH, sM, eH, eM] of intervals.sort((a, b) => a[0] * 60 + a[1] - (b[0] * 60 + b[1]))) {
+        const start = sH * 60 + sM;
+        if (start > currentMinutes) {
+            const duration = (eH * 60 + eM) - start;
+            return { h: sH, m: sM, duration };
+        }
     }
-    return result;
+    return null;
 }
 
-async function initApp() {
-    populateLocationSelects();
+// Основное отображение
+function render() {
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    const todayData = schedules[dateStr] || {};
+    const intervals = todayData[selectedQueue] || [];
 
-    citySelect.value = userConfig.city;
-    queueSelect.value = userConfig.queue;
-    updateLocationLabel();
+    const isOff = isOutageNow(intervals);
+    const nextOutage = getNextOutage(intervals);
+
+    // Обновить статус
+    const statusBadge = document.getElementById('status-badge');
+    const statusIcon = document.getElementById('status-icon');
+    const statusSubtitle = document.getElementById('status-subtitle');
+    const statusCard = document.getElementById('status-card');
+
+    if (isOff) {
+        statusBadge.textContent = 'Світло відключено!';
+        statusBadge.className = 'status-badge off';
+        statusIcon.textContent = '🔌';
+        statusSubtitle.textContent = 'Світло відсутнє за розкладом';
+        statusCard.className = 'glass-effect rounded-3xl p-8 sm:p-10 border-2 border-red-500/30';
+    } else {
+        statusBadge.textContent = 'Світло є';
+        statusBadge.className = 'status-badge on';
+        statusIcon.textContent = '💡';
+        statusSubtitle.textContent = nextOutage
+            ? `Наступне о ${String(nextOutage.h).padStart(2, '0')}:${String(nextOutage.m).padStart(2, '0')}`
+            : 'Відключень сьогодні не буде';
+        statusCard.className = 'glass-effect rounded-3xl p-8 sm:p-10 border-2 border-blue-500/20';
+    }
+
+    // Обновить дату
+    document.getElementById('today-date-str').textContent = now.toLocaleDateString('uk-UA', {
+        day: 'numeric',
+        month: 'short'
+    });
+
+    // Обновить час
+    document.getElementById('update-time').textContent = now.toLocaleTimeString('uk-UA', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
+    // Обновить черг в хедере
+    document.getElementById('current-location-label').textContent = `Черга ${selectedQueue}`;
+
+    // Отрисовка таймлайна (24 часа)
+    renderTimeline(intervals);
+
+    // Отрисовка списка відключень
+    renderOutages(intervals);
+
+    // Отрисовка всех черг
+    renderQueues(todayData);
+}
+
+// Таймлайн 24/7
+function renderTimeline(intervals) {
+    const bar = document.getElementById('timeline-bar');
+    bar.innerHTML = '';
 
     const now = new Date();
-    todayDateStr.textContent = now.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' });
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
 
-    schedules = getDefaultSchedules();
-    renderSchedule();
+    for (let h = 0; h < 24; h++) {
+        const hourDiv = document.createElement('div');
+        hourDiv.className = 'flex-1 h-full flex gap-0.5';
 
-    await fetchSchedules();
+        for (let q = 0; q < 4; q++) {
+            const minute = q * 15;
+            let isOutage = false;
 
-    setInterval(fetchSchedules, 60000); // Оновлювати кожну хвилину з кешу
-    setInterval(renderSchedule, 30000);
+            for (const [sH, sM, eH, eM] of intervals) {
+                const totalMin = sH * 60 + sM;
+                const endMin = eH * 60 + eM;
+                const checkMin = h * 60 + minute;
+                if (checkMin >= totalMin && checkMin < endMin) {
+                    isOutage = true;
+                    break;
+                }
+            }
+
+            const slot = document.createElement('div');
+            slot.className = `flex-1 time-slot ${isOutage ? 'off' : 'on'}`;
+
+            if (h === currentHour && Math.floor(currentMinute / 15) === q) {
+                slot.style.boxShadow = '0 0 8px rgba(250, 204, 21, 0.8)';
+            }
+
+            hourDiv.appendChild(slot);
+        }
+
+        bar.appendChild(hourDiv);
+    }
 }
 
-function populateLocationSelects() {
-    const locations = getAllLocations();
-    citySelect.innerHTML = '';
-    findQueueLocationSelect.innerHTML = '';
+// Список відключень
+function renderOutages(intervals) {
+    const el = document.getElementById('outage-intervals');
+    el.innerHTML = '';
 
-    locations.forEach(loc => {
-        const option1 = document.createElement('option');
-        option1.value = loc.key;
-        option1.textContent = loc.name;
-        citySelect.appendChild(option1);
+    if (intervals.length === 0) {
+        el.innerHTML = '<div class="glass-effect rounded-lg p-4 text-center text-slate-400">Сьогодні без перерв</div>';
+        return;
+    }
 
-        const option2 = document.createElement('option');
-        option2.value = loc.key;
-        option2.textContent = loc.name;
-        findQueueLocationSelect.appendChild(option2);
+    intervals.forEach(([sH, sM, eH, eM], i) => {
+        const duration = (eH * 60 + eM) - (sH * 60 + sM);
+        const hours = Math.floor(duration / 60);
+        const mins = duration % 60;
+
+        const item = document.createElement('div');
+        item.className = 'glass-effect rounded-lg p-4 border border-red-500/30';
+        item.innerHTML = `
+            <div class="flex justify-between items-center">
+                <span class="font-bold">${String(sH).padStart(2, '0')}:${String(sM).padStart(2, '0')} — ${String(eH).padStart(2, '0')}:${String(eM).padStart(2, '0')}</span>
+                <span class="text-xs text-slate-400">${hours}г ${mins}хв</span>
+            </div>
+        `;
+        el.appendChild(item);
     });
 }
 
-function updateLocationLabel() {
-    const locationInfo = getLocationInfo(userConfig.city);
-    const locationName = locationInfo ? locationInfo.name : 'м. Сміла';
-    currentLocationLabel.textContent = `${locationName} • ${userConfig.queue}`;
+// Всі черги (карточки)
+function renderQueues(todayData) {
+    const container = document.getElementById('all-queues-container');
+    container.innerHTML = '';
+
+    ALL_QUEUES.forEach(q => {
+        const intervals = todayData[q] || [];
+        const isActive = q === selectedQueue;
+
+        let isOff = false;
+        const now = new Date();
+        const currentMin = now.getHours() * 60 + now.getMinutes();
+
+        for (const [sH, sM, eH, eM] of intervals) {
+            const start = sH * 60 + sM;
+            const end = eH * 60 + eM;
+            if (currentMin >= start && currentMin < end) {
+                isOff = true;
+                break;
+            }
+        }
+
+        const card = document.createElement('div');
+        card.className = `queue-card ${isActive ? 'active' : ''} ${isOff ? 'off-status' : 'on-status'}`;
+        card.innerHTML = `
+            <div class="flex flex-col items-center gap-2">
+                <span class="text-2xl">${isOff ? '🔌' : '💡'}</span>
+                <span class="font-bold text-lg">${q}</span>
+                <span class="text-xs text-slate-400">${intervals.length} період${intervals.length !== 1 ? 'и' : ''}</span>
+                ${isActive ? '<span class="text-xs text-blue-400">✓</span>' : ''}
+            </div>
+        `;
+
+        card.addEventListener('click', () => {
+            selectedQueue = q;
+            localStorage.setItem('svitlo_queue', q);
+            render();
+        });
+
+        container.appendChild(card);
+    });
 }
 
-// Запуск при завантаженні
-document.addEventListener('DOMContentLoaded', initApp);
+// Завантажити дані
+async function loadSchedules() {
+    try {
+        const response = await fetch(`${API_BASE_URL}?t=${Date.now()}`, {
+            signal: AbortSignal.timeout(5000)
+        });
+        if (response.ok) {
+            schedules = await response.json();
+            localStorage.setItem('svitlo_cache', JSON.stringify(schedules));
+        }
+    } catch (e) {
+        const cached = localStorage.getItem('svitlo_cache');
+        if (cached) {
+            schedules = JSON.parse(cached);
+        }
+    }
+    render();
+}
+
+// Модальне вікно налаштувань
+function setupModal() {
+    const btn = document.getElementById('settings-btn');
+    const modal = document.getElementById('settings-modal');
+    const closeBtn = document.getElementById('close-modal-btn');
+    const saveBtn = document.getElementById('save-settings-btn');
+    const queueSelect = document.getElementById('queue-select');
+
+    btn.addEventListener('click', () => {
+        queueSelect.value = selectedQueue;
+        modal.classList.remove('hidden', 'opacity-0');
+        modal.classList.add('opacity-100');
+    });
+
+    closeBtn.addEventListener('click', () => {
+        modal.classList.add('opacity-0');
+        setTimeout(() => modal.classList.add('hidden'), 300);
+    });
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.add('opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+    });
+
+    saveBtn.addEventListener('click', () => {
+        selectedQueue = queueSelect.value;
+        localStorage.setItem('svitlo_queue', selectedQueue);
+        modal.classList.add('opacity-0');
+        setTimeout(() => modal.classList.add('hidden'), 300);
+        render();
+    });
+}
+
+// Запуск
+window.addEventListener('load', () => {
+    setupModal();
+    loadSchedules();
+    setInterval(render, 60000); // Оновлювати щохвилини
+    setInterval(loadSchedules, 300000); // Завантажити щих 5 хвилин
+});

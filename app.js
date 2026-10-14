@@ -204,28 +204,23 @@ async function loadSchedules() {
             schedules = JSON.parse(cached);
         }
     }
-    render();
 }
 
-function initApp() {
-    // Якщо черга вже обрана
-    if (selectedQueue) {
-        const modal = document.getElementById('first-launch-modal');
-        if (modal) modal.style.display = 'none';
-        loadSchedules();
-    } else {
-        // Налаштування першого запуску
+async function initApp() {
+    // Завантажити дані ДО всього
+    await loadSchedules();
+
+    // Якщо черга НЕ обрана, показати модальне вікно
+    if (!selectedQueue) {
         const select = document.getElementById('first-queue-select');
         const btn = document.getElementById('first-launch-btn');
         const modal = document.getElementById('first-launch-modal');
 
         if (select && btn && modal) {
-            // Активувати кнопку при виборі
             select.addEventListener('change', () => {
                 btn.disabled = !select.value;
             });
 
-            // Обробка клику кнопки
             btn.addEventListener('click', () => {
                 const queue = select.value;
                 if (!queue) return;
@@ -233,13 +228,17 @@ function initApp() {
                 selectedQueue = queue;
                 localStorage.setItem('svitlo_queue', queue);
                 modal.style.display = 'none';
-
-                loadSchedules();
+                render();
             });
         }
+    } else {
+        // Черга вже обрана, приховати модальне вікно й показати дані
+        const modal = document.getElementById('first-launch-modal');
+        if (modal) modal.style.display = 'none';
+        render();
     }
 
-    // Налаштування модального вікна для змін черги
+    // Налаштування кнопки для змін черги
     const settingsBtn = document.getElementById('settings-btn');
     const settingsModal = document.getElementById('settings-modal');
     const saveBtn = document.getElementById('save-settings-btn');

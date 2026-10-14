@@ -8,10 +8,14 @@
   "background_color": "#090d16",
   "theme_color": "#0d1117",
   "orientation": "portrait-primary",
+  "categories": [
+    "utilities",
+    "productivity"
+  ],
   "icons": [
     {
       "src": "icon.svg",
-      "sizes": "any",
+      "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }

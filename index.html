@@ -66,23 +66,22 @@
     <!-- Main Container -->
     <main class="flex-1 max-w-4xl w-full mx-auto px-4 py-8 space-y-6">
 
-        <!-- Status Card (Hero) -->
-        <section id="status-card" class="relative overflow-hidden rounded-3xl p-7 border transition-all duration-500 shadow-2xl bg-slate-900/90 border-slate-800">
-            <!-- Background glow effect -->
+        <!-- Hero Status Card -->
+        <section id="status-card" class="relative overflow-hidden rounded-3xl p-6 sm:p-7 border transition-all duration-500 shadow-2xl bg-slate-900/90 border-slate-800">
             <div id="status-glow" class="absolute -right-20 -top-20 w-64 h-64 rounded-full blur-3xl opacity-10 pointer-events-none transition-colors duration-500 bg-amber-500"></div>
 
             <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div class="flex items-start space-x-5">
-                    <div id="status-icon-container" class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-inner shrink-0 bg-slate-800 border border-slate-700">
+                <div class="flex items-start space-x-4 sm:space-x-5">
+                    <div id="status-icon-container" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl shadow-inner shrink-0 bg-slate-800 border border-slate-700">
                         <span id="status-icon">💡</span>
                     </div>
                     <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span id="status-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700">Перевірка</span>
-                            <span id="update-time" class="text-xs text-slate-400 font-mono">Оновлено щойно</span>
+                        <div class="flex items-center gap-2 mb-1 flex-wrap">
+                            <span id="status-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700">Готово</span>
+                            <span id="update-time" class="text-xs text-slate-400 font-mono">Актуально</span>
                         </div>
-                        <h2 id="status-title" class="text-2xl md:text-3xl font-extrabold tracking-tight text-white">Завантаження...</h2>
-                        <p id="status-subtitle" class="text-sm text-slate-300 mt-1 max-w-md">Збираємо актуальний графік погодинних відключень</p>
+                        <h2 id="status-title" class="text-2xl md:text-3xl font-extrabold tracking-tight text-white">м. Сміла • 3.1</h2>
+                        <p id="status-subtitle" class="text-sm text-slate-300 mt-1 max-w-md">Завантаження розкладу...</p>
                     </div>
                 </div>
 
@@ -92,6 +91,22 @@
                     <span id="next-event-desc" class="text-xs text-slate-400">Очікування даних</span>
                 </div>
             </div>
+        </section>
+
+        <!-- Quick Help Banner (Find Queue Prompt) -->
+        <section class="bg-gradient-to-r from-blue-950/60 to-slate-900/80 border border-blue-900/40 rounded-2xl p-4 sm:p-5 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3 text-center sm:text-left">
+                <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-xl shrink-0 mx-auto sm:mx-0">
+                    🔍
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-slate-200">Не знаєте свою чергу?</h3>
+                    <p class="text-xs text-slate-400">Введіть свою вулицю або село, і система автоматично знайде графік.</p>
+                </div>
+            </div>
+            <button onclick="document.getElementById('find-queue-btn').click()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition shadow-md shrink-0 cursor-pointer">
+                Знайти за адресою
+            </button>
         </section>
 
         <!-- Timeline Section -->

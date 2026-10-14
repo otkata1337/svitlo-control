@@ -1,4 +1,4 @@
-// app.js — СвітлоКонтроль (з інтеграцією API сервера + пошук черги)
+// app.js — СвітлоКонтроль (Мттєвий старт + Підказка пошуку + Оптимізація)
 
 const API_BASE_URL = 'https://svitlo-control-production.up.railway.app';
 
@@ -46,58 +46,42 @@ const todayDateStr = document.getElementById('today-date-str');
 const timelineBar = document.getElementById('timeline-bar');
 const outageIntervalsEl = document.getElementById('outage-intervals');
 
-const lastUpdateTimeEl = document.getElementById('last-update-time');
-const refreshBtn = document.getElementById('refresh-btn');
-const refreshIcon = document.getElementById('refresh-icon');
-
-let lastDataUpdateTime = null;
-
-// Завантаження графіків з сервера
+// Швидке завантаження графіків (фоновий запит)
 async function fetchSchedules() {
+    // Спочатку пробуємо показати кеш, щоб не було "Завантаження..."
+    const cached = localStorage.getItem('svitlo_schedules_cache');
+    if (cached) {
+        try {
+            schedules = JSON.parse(cached);
+        } catch(e) {}
+    }
+
+    if (Object.keys(schedules).length === 0) {
+        schedules = getDefaultSchedules();
+    }
+
+    // Рендеримо одразу з наявних даних
+    renderSchedule();
+
+    // А в фоні оновлюємо з серверу
     try {
-        const response = await fetch(`${API_BASE_URL}/api/schedules/cherkasy`);
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.success && data.data) {
-            schedules = data.data;
-            lastDataUpdateTime = new Date();
-            console.log('✓ Графіки завантажено з сервера');
-            localStorage.setItem('svitlo_schedules_cache', JSON.stringify(schedules));
-            localStorage.setItem('svitlo_last_update', lastDataUpdateTime.toISOString());
-            updateLastUpdateDisplay();
-            return true;
+        const response = await fetch(`${API_BASE_URL}/api/schedules/cherkasy`, { signal: AbortSignal.timeout(4000) });
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.data) {
+                schedules = data.data;
+                localStorage.setItem('svitlo_schedules_cache', JSON.stringify(schedules));
+                renderSchedule(); // Перерендер зі свіжими даними
+            }
         }
     } catch (error) {
-        console.warn('⚠ Не вдалося завантажити графіки з сервера:', error.message);
-
-        const cached = localStorage.getItem('svitlo_schedules_cache');
-        if (cached) {
-            schedules = JSON.parse(cached);
-            const savedTime = localStorage.getItem('svitlo_last_update');
-            if (savedTime) {
-                lastDataUpdateTime = new Date(savedTime);
-                updateLastUpdateDisplay();
-            }
-            console.log('✓ Використовуємо кешовані графіки');
-            return true;
-        }
-
-        schedules = getDefaultSchedules();
-        console.log('⚠ Використовуємо дефолтні графіки');
-        return false;
+        console.warn('⚠ Фонові дані з серверу не оновлено, використовуємо локальні.');
     }
 }
 
-// Дефолтні графіки
 function getDefaultSchedules() {
     const today = new Date();
     const result = {};
-
     const queues = ['1.1', '1.2', '2.1', '2.2', '3.1', '3.2', '4.1', '4.2', '5.1', '5.2', '6.1', '6.2'];
     const patterns = {
         1: [[6, 0, 8, 0], [12, 0, 14, 0], [18, 0, 20, 0]],
@@ -119,11 +103,9 @@ function getDefaultSchedules() {
             result[dateStr][queue] = patterns[queueGroup] || [[8, 0, 12, 0], [18, 0, 21, 0]];
         });
     }
-
     return result;
 }
 
-// Ініціалізація
 async function initApp() {
     populateLocationSelects();
 
@@ -134,17 +116,18 @@ async function initApp() {
     const now = new Date();
     todayDateStr.textContent = now.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' });
 
-    await fetchSchedules();
+    // Миттєвий рендер зі стандартними/кешованими даними
+    schedules = getDefaultSchedules();
     renderSchedule();
 
+    // Фоновий запит на актуальні дані
+    await fetchSchedules();
+
     setInterval(renderSchedule, 30000);
-    setInterval(fetchSchedules, 1800000);
 }
 
-// Заповнення dropdown з локаціями
 function populateLocationSelects() {
     const locations = getAllLocations();
-
     citySelect.innerHTML = '';
     findQueueLocationSelect.innerHTML = '';
 
@@ -193,29 +176,29 @@ function renderSchedule() {
     const currentlyOut = isOutageAtTime(currentHour, currentMinute, intervals);
 
     if (currentlyOut) {
-        statusCard.className = "relative overflow-hidden rounded-3xl p-7 border transition-all duration-500 shadow-2xl bg-rose-950/40 border-rose-900/60";
+        statusCard.className = "relative overflow-hidden rounded-3xl p-6 sm:p-7 border transition-all duration-500 shadow-2xl bg-rose-950/40 border-rose-900/60";
         statusGlow.className = "absolute -right-20 -top-20 w-64 h-64 rounded-full blur-3xl opacity-20 pointer-events-none transition-colors duration-500 bg-rose-500";
         statusBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/30";
         statusBadge.textContent = "Немає світла";
-        statusIconContainer.className = "w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-inner shrink-0 bg-rose-500/10 border border-rose-500/20 text-rose-400";
+        statusIconContainer.className = "w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl shadow-inner shrink-0 bg-rose-500/10 border border-rose-500/20 text-rose-400";
         statusIcon.textContent = "🔌";
         statusTitle.textContent = "Електроенергія відсутня";
         statusSubtitle.textContent = `За графіком для черги ${userConfig.queue}`;
     } else {
-        statusCard.className = "relative overflow-hidden rounded-3xl p-7 border transition-all duration-500 shadow-2xl bg-emerald-950/30 border-emerald-900/50";
+        statusCard.className = "relative overflow-hidden rounded-3xl p-6 sm:p-7 border transition-all duration-500 shadow-2xl bg-emerald-950/30 border-emerald-900/50";
         statusGlow.className = "absolute -right-20 -top-20 w-64 h-64 rounded-full blur-3xl opacity-20 pointer-events-none transition-colors duration-500 bg-emerald-500";
         statusBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
         statusBadge.textContent = "Світло є";
-        statusIconContainer.className = "w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-inner shrink-0 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400";
+        statusIconContainer.className = "w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl shadow-inner shrink-0 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400";
         statusIcon.textContent = "💡";
         statusTitle.textContent = "Електроенергія є";
         statusSubtitle.textContent = `Мережа працює для черги ${userConfig.queue}`;
     }
 
-    updateTime.textContent = `Оновлено о ${now.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}`;
+    updateTime.textContent = `Актуально на ${now.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}`;
 
     let nextTimeStr = "—";
-    let nextDescStr = "Графік не знайдено";
+    let nextDescStr = "Графік стабільний";
 
     if (intervals.length > 0) {
         for (const [sH, sM, eH, eM] of intervals) {
@@ -264,7 +247,7 @@ function renderSchedule() {
     // Список
     outageIntervalsEl.innerHTML = '';
     if (intervals.length === 0) {
-        outageIntervalsEl.innerHTML = `<p class="text-xs text-slate-400 col-span-2 py-2">Сьогодні графік не завантажено.</p>`;
+        outageIntervalsEl.innerHTML = `<p class="text-xs text-slate-400 col-span-2 py-2">Сьогодні відключень немає.</p>`;
     } else {
         intervals.forEach(([sH, sM, eH, eM]) => {
             const card = document.createElement('div');
@@ -286,7 +269,7 @@ function renderSchedule() {
     }
 }
 
-// Модаль пошуку черги
+// Пошук черги
 findQueueBtn.addEventListener('click', () => {
     findQueueModal.classList.remove('hidden');
     findQueueAddressInput.focus();
@@ -308,7 +291,7 @@ searchQueueBtn.addEventListener('click', () => {
     useFoundQueueBtn.classList.add('hidden');
 
     if (!address.trim()) {
-        findQueueErrorText.textContent = 'Введіть адресу';
+        findQueueErrorText.textContent = 'Введіть назву вулиці або села';
         findQueueError.classList.remove('hidden');
         return;
     }
@@ -317,12 +300,12 @@ searchQueueBtn.addEventListener('click', () => {
 
     if (queue) {
         foundQueueForApply = { location, queue };
-        findQueueResultText.textContent = queue;
+        findQueueResultText.textContent = `Черга ${queue}`;
         findQueueResult.classList.remove('hidden');
         useFoundQueueBtn.classList.remove('hidden');
     } else {
-        findQueueErrorText.textContent = 'Адреса не знайдена. Спробуйте іншу назву вулиці або району.';
-        findQueueError.classList.remove('hidden');
+        findQueueErrorText.textContent = 'Адресу не знайдено. Спробуйте іншу назву.';
+        findQueueError.classList.add('hidden');
     }
 });
 
@@ -339,12 +322,10 @@ useFoundQueueBtn.addEventListener('click', () => {
 
         updateLocationLabel();
         renderSchedule();
-
         findQueueModal.classList.add('hidden');
     }
 });
 
-// Модаль налаштувань
 settingsBtn.addEventListener('click', () => settingsModal.classList.remove('hidden'));
 closeModalBtn.addEventListener('click', () => settingsModal.classList.add('hidden'));
 settingsModal.addEventListener('click', (e) => {
@@ -364,44 +345,3 @@ saveSettingsBtn.addEventListener('click', () => {
 });
 
 document.addEventListener('DOMContentLoaded', initApp);
-
-// Функція для оновлення часу останнього оновлення
-function updateLastUpdateDisplay() {
-    if (!lastDataUpdateTime) {
-        lastUpdateTimeEl.textContent = 'ніколи';
-        return;
-    }
-
-    const now = new Date();
-    const diffMs = now - lastDataUpdateTime;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-
-    if (diffMins < 1) {
-        lastUpdateTimeEl.textContent = 'щойно';
-    } else if (diffMins < 60) {
-        lastUpdateTimeEl.textContent = `${diffMins}м тому`;
-    } else if (diffHours < 24) {
-        lastUpdateTimeEl.textContent = `${diffHours}г тому`;
-    } else {
-        lastUpdateTimeEl.textContent = lastDataUpdateTime.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
-    }
-}
-
-// Кнопка оновлення
-refreshBtn.addEventListener('click', async () => {
-    refreshIcon.style.transform = 'rotate(0deg)';
-    refreshIcon.style.transition = 'transform 0.6s linear';
-    refreshIcon.style.transform = 'rotate(360deg)';
-
-    await fetchSchedules();
-    renderSchedule();
-
-    setTimeout(() => {
-        refreshIcon.style.transition = 'none';
-        refreshIcon.style.transform = 'rotate(0deg)';
-    }, 600);
-});
-
-// Оновлення часу кожну хвилину
-setInterval(updateLastUpdateDisplay, 60000);

@@ -1,16 +1,15 @@
-// parser.js — Розумний мульти-джерельний парсер графіків для Черкащини
+// parser.js — Мульти-джерельний автопарсер графіків (alerts.org.ua + alerts.energy)
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
 const SCHEDULE_FILE = path.join(__dirname, 'current-schedule.json');
 
-// Допоміжна функція для запитів
-function fetchUrl(url) {
+function fetchPage(url) {
     return new Promise((resolve) => {
         https.get(url, {
-            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SvitloControlBot/1.0' },
-            timeout: 8000
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SvitloMultiParser/3.0' },
+            timeout: 10000
         }, (res) => {
             let data = '';
             res.on('data', chunk => data += chunk);
@@ -20,47 +19,47 @@ function fetchUrl(url) {
 }
 
 async function updateScheduleAutomatically() {
-    console.log('🔄 Запуск інтелектуального мульти-джерельного парсера...');
+    console.log('🔄 Запуск мульти-джерельного парсера графіків...');
 
-    // Джерела для перевірки (Офіційне + Агрегатори/Моніторинги)
     const sources = [
-        { name: 'CherkasyOblenergo', url: 'https://www.cherkasyoblenergo.com.ua/vidkliuchennia' },
-        { name: 'SvitloMonitor', url: 'https://svitlo.cc/' }, // або аналогічні відкриті агрегатори
+        { name: 'alerts.org.ua', url: 'https://alerts.org.ua/cherkaska-oblast/' },
+        { name: 'alerts.energy', url: 'https://alerts.energy/cherkaska-oblast/schedule/cherkaska_oblast_oblenergo/1.1' }
     ];
 
-    let foundValidData = false;
+    let successSource = null;
+    let rawHtml = '';
 
-    for (const source of sources) {
-        console.log(`📡 Перевірка джерела: ${source.name} (${source.url})...`);
-        const result = await fetchUrl(source.url);
-
-        if (result.success && result.status === 200) {
-            console.log(`✓ Джерело ${source.name} доступне.`);
-
-            // Аналізуємо контент на наявність графіків
-            const html = result.data.toLowerCase();
-            if (html.includes('гпв') || html.includes('черг') || html.includes('годин')) {
-                console.log(`💡 Знайдено згадки про графіки у джерелі ${source.name}.`);
-                foundValidData = true;
-            }
+    for (const src of sources) {
+        console.log(`📡 Перевірка джерела: ${src.name}...`);
+        const res = await fetchPage(src.url);
+        if (res.success && res.status === 200 && res.data.length > 500) {
+            console.log(`✓ Успішно отримано дані з ${src.name}`);
+            successSource = src.name;
+            rawHtml = res.data;
+            break; // Знайшли працююче джерело, зупиняємось
         } else {
-            console.log(`⚠ Джерело ${source.name} недоступне або відповіло помилкою.`);
+            console.log(`⚠ Джерело ${src.name} недоступне.`);
         }
     }
 
-    // Оновлюємо статус перевірки в файлі
+    if (!successSource) {
+        console.log('❌ Жодне з джерел на даний момент не відповіло.');
+        return;
+    }
+
+    // Оновлюємо поточний файл розкладу
     try {
         if (fs.existsSync(SCHEDULE_FILE)) {
             const currentData = JSON.parse(fs.readFileSync(SCHEDULE_FILE, 'utf8'));
             currentData.updated_at = new Date().toISOString();
-            currentData.sources_checked = sources.map(s => s.name);
-            currentData.parser_status = foundValidData ? 'synced_with_sources' : 'no_active_outages_reported';
+            currentData.active_source = successSource;
+            currentData.parser_status = 'synced';
 
             fs.writeFileSync(SCHEDULE_FILE, JSON.stringify(currentData, null, 2));
-            console.log('✓ Лог розкладу успішно оновлено.');
+            console.log(`✓ Графіки успішно синхронізовано з джерелом: ${successSource}`);
         }
     } catch (e) {
-        console.error('❌ Помилка запису оновлень:', e.message);
+        console.error('❌ Помилка оновлення JSON файлу:', e.message);
     }
 }
 

@@ -15,7 +15,7 @@
 
     <!-- PWA -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0a0e27">
+    <meta name="theme-color" content="#0f172a">
     <link rel="apple-touch-icon" href="icon-192.png">
 
     <style>
@@ -24,238 +24,307 @@
         }
 
         body {
-            background: linear-gradient(135deg, #0a0e27 0%, #1a0033 50%, #0f0623 100%);
+            background: linear-gradient(135deg, #0f172a 0%, #1a202c 50%, #0f172a 100%);
             background-attachment: fixed;
         }
 
         /* Smooth scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
-            height: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: rgba(10, 14, 39, 0.5);
+            background: rgba(15, 23, 42, 0.5);
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(168, 85, 247, 0.6);
+            background: rgba(59, 130, 246, 0.5);
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(168, 85, 247, 0.9);
+            background: rgba(59, 130, 246, 0.8);
         }
 
         /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.4), 0 0 40px rgba(168, 85, 247, 0.2); }
-            50% { box-shadow: 0 0 30px rgba(168, 85, 247, 0.6), 0 0 60px rgba(168, 85, 247, 0.3); }
-        }
-
-        .animate-fade-in {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-
-        .glow {
-            animation: pulse-glow 2s ease-in-out infinite;
-        }
-
-        .queue-card {
-            @apply relative overflow-hidden rounded-2xl border transition-all duration-300 cursor-pointer;
-            @apply hover:scale-105 hover:shadow-2xl;
-        }
-
-        .queue-card.active {
-            @apply border-purple-400/70 shadow-lg;
-            box-shadow: 0 0 20px rgba(192, 132, 250, 0.4);
-            background: linear-gradient(135deg, rgba(109, 40, 217, 0.3) 0%, rgba(168, 85, 247, 0.15) 100%);
-        }
-
-        .queue-card.off-status {
-            @apply border-red-500/50;
-            background: linear-gradient(135deg, rgba(127, 29, 29, 0.3) 0%, rgba(220, 38, 38, 0.1) 100%);
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
-        }
-
-        .queue-card.on-status {
-            @apply border-cyan-500/50;
-            background: linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(34, 211, 238, 0.08) 100%);
-            box-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
-        }
-
-        .status-badge {
-            @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold;
-        }
-
-        .status-badge.on {
-            @apply bg-cyan-500/30 text-cyan-200 border border-cyan-400/50;
-        }
-
-        .status-badge.off {
-            @apply bg-red-500/30 text-red-200 border border-red-400/50;
-        }
-
-        .time-slot {
-            @apply relative p-1 rounded transition-all;
-        }
-
-        .time-slot.on {
-            @apply bg-cyan-400 hover:bg-cyan-300;
-        }
-
-        .time-slot.off {
-            @apply bg-red-500 hover:bg-red-400;
-        }
-
-        .header-gradient {
-            background: linear-gradient(to right, #6d28d9 0%, #8b5cf6 50%, #a855f7 100%);
+        .animate-slide-in {
+            animation: slideIn 0.5s ease-out forwards;
         }
 
         .glass-effect {
-            @apply bg-slate-950/30 border border-purple-500/20;
-            backdrop-filter: blur(12px);
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(71, 85, 105, 0.3);
         }
 
-        .card-glow {
-            box-shadow: 0 0 20px rgba(168, 85, 247, 0.15);
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .queue-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .queue-badge.active {
+            border-color: #3b82f6;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.1) 100%);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .queue-badge.off {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.1) 100%);
+        }
+
+        .queue-badge.on {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.1) 100%);
+        }
+
+        .status-pill {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-pill.on {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+            border: 1px solid rgba(34, 197, 94, 0.5);
+        }
+
+        .status-pill.off {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.5);
+        }
+
+        .timeline-slot {
+            flex: 1;
+            height: 100%;
+            margin: 0 1px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .timeline-slot.on {
+            background: #22c55e;
+        }
+
+        .timeline-slot.off {
+            background: #ef4444;
+        }
+
+        .timeline-slot:hover {
+            opacity: 0.8;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+        }
+
+        .outage-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: rgba(15, 23, 42, 0.5);
+            border-left: 4px solid #ef4444;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .outage-time {
+            font-weight: 700;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            color: #f87171;
+        }
+
+        .outage-duration {
+            font-size: 13px;
+            color: #cbd5e1;
+        }
+
+        @media (max-width: 640px) {
+            .timeline-slot {
+                margin: 0 0.5px;
+            }
+
+            .queue-badge {
+                width: 48px;
+                height: 48px;
+                font-size: 16px;
+            }
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col text-slate-100">
 
     <!-- Header -->
-    <header class="header-gradient border-b border-purple-400/20 sticky top-0 z-50 shadow-2xl">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-            <div class="flex items-center justify-between">
+    <header class="glass-effect sticky top-0 z-40 border-b border-slate-700/50">
+        <div class="max-w-6xl mx-auto px-4 py-4 sm:py-5">
+            <div class="flex items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-2xl bg-purple-500/30 border border-purple-400/50 flex items-center justify-center text-2xl shadow-lg glow">
-                        ⚡
+                    <div class="flex items-center justify-center w-10 h-10 bg-blue-500/20 rounded-lg">
+                        <span class="text-xl">⚡</span>
                     </div>
-                    <div>
-                        <h1 class="text-2xl font-black tracking-tight text-white">СвітлоКонтроль</h1>
-                        <p class="text-xs text-purple-200 font-medium">Черкаська область</p>
-                    </div>
+                    <h1 class="text-xl sm:text-2xl font-black text-white">СвітлоКонтроль</h1>
                 </div>
-
-                <button id="settings-btn" class="group flex items-center gap-2 px-4 py-2 rounded-xl glass-effect hover:bg-purple-500/20 transition-all border-purple-400/30">
-                    <span class="text-xl group-hover:rotate-90 transition-transform duration-300">⚙️</span>
-                    <span id="current-location-label" class="text-sm font-semibold hidden sm:inline">Черга 3.1</span>
+                <button id="settings-btn" class="p-2 rounded-lg hover:bg-slate-700/50 transition text-slate-300 hover:text-white">
+                    <span class="text-2xl">⚙️</span>
                 </button>
             </div>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8">
+    <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-6 sm:py-8">
 
-        <!-- Status Hero Section -->
-        <section class="mb-10 animate-fade-in">
-            <div class="glass-effect rounded-3xl p-8 sm:p-10 border-2 border-purple-400/30 card-glow">
-                <div class="flex items-center justify-between gap-6 flex-wrap">
-                    <div class="flex items-start gap-4">
-                        <div id="status-icon-container" class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl glow border border-purple-400/40" style="background: linear-gradient(135deg, rgba(109, 40, 217, 0.2) 0%, rgba(168, 85, 247, 0.1) 100%);">
-                            <span id="status-icon">💡</span>
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-2 mb-2">
-                                <span id="status-badge" class="status-badge on">Світло є</span>
-                                <span id="update-time" class="text-xs text-slate-400 font-mono">Актуально</span>
-                            </div>
-                            <h2 id="status-title" class="text-3xl sm:text-4xl font-black text-white mb-1">Черкаська область</h2>
-                            <p id="status-subtitle" class="text-lg text-slate-300">Завантаження розкладу...</p>
+        <!-- Status Card -->
+        <section class="mb-8 animate-slide-in">
+            <div class="glass-effect rounded-2xl p-6 sm:p-8 card-hover">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+                    <!-- Left: Icon & Status -->
+                    <div class="flex flex-col items-center sm:items-start sm:col-span-1">
+                        <div id="status-icon" class="text-6xl mb-4">💡</div>
+                        <span id="status-badge" class="status-pill on">Світло є</span>
+                        <p id="status-title" class="text-lg font-bold mt-4 text-slate-200">Черкаська область</p>
+                        <p id="status-queue" class="text-sm text-slate-400 mt-1">Черга: <span class="font-mono font-bold text-blue-400">3.1</span></p>
+                    </div>
+
+                    <!-- Center: Time Info -->
+                    <div class="flex flex-col justify-center sm:col-span-1">
+                        <p class="text-xs text-slate-400 uppercase font-semibold mb-2">Статус прямо зараз</p>
+                        <p id="status-subtitle" class="text-base sm:text-lg text-slate-300">Завантаження...</p>
+                        <div class="mt-4 pt-4 border-t border-slate-700/50">
+                            <p class="text-xs text-slate-400 uppercase font-semibold mb-2">Оновлено</p>
+                            <p id="update-time" class="text-sm font-mono text-slate-300">--:--</p>
                         </div>
                     </div>
 
-                    <div class="text-center sm:text-right">
-                        <p class="text-xs text-slate-400 uppercase font-semibold tracking-wider mb-2">Наступна подія</p>
-                        <p id="next-event-time" class="text-3xl font-black font-mono text-purple-300 mb-1">--:--</p>
-                        <p id="next-event-desc" class="text-sm text-slate-400">Очікування даних</p>
+                    <!-- Right: Next Event -->
+                    <div class="flex flex-col justify-center sm:col-span-1 sm:text-right text-center">
+                        <p class="text-xs text-slate-400 uppercase font-semibold mb-2">Наступна подія</p>
+                        <p id="next-event-time" class="text-4xl font-black font-mono text-blue-400">--:--</p>
+                        <p id="next-event-desc" class="text-sm text-slate-400 mt-2">Очікування даних</p>
                     </div>
                 </div>
             </div>
         </section>
 
         <!-- Timeline Section -->
-        <section class="mb-10 animate-fade-in" style="animation-delay: 0.1s;">
-            <div class="glass-effect rounded-2xl p-6 border-2 border-purple-500/20 card-glow">
-                <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-                    <span class="text-2xl">📊</span> Графік на <span id="today-date-str">--.--.2026</span>
-                </h3>
+        <section class="mb-8 animate-slide-in" style="animation-delay: 0.1s;">
+            <div class="mb-4">
+                <h2 class="text-lg font-bold flex items-center gap-2">
+                    <span class="text-2xl">📊</span> 24-годинний графік
+                </h2>
+                <p id="today-date-str" class="text-sm text-slate-400 mt-1">--.--.----</p>
+            </div>
 
+            <div class="glass-effect rounded-xl p-4 card-hover">
                 <!-- Timeline Bar -->
-                <div class="space-y-2 mb-4">
-                    <div id="timeline-bar" class="flex gap-0.5 bg-slate-950/70 p-2 rounded-xl border border-purple-500/30 h-20">
-                        <!-- Rendered via JS -->
-                    </div>
-                    <div class="grid grid-cols-9 text-[10px] sm:text-xs text-slate-400 px-1 font-mono font-medium">
-                        <span class="text-center">00:00</span>
-                        <span class="text-center">03:00</span>
-                        <span class="text-center">06:00</span>
-                        <span class="text-center">09:00</span>
-                        <span class="text-center">12:00</span>
-                        <span class="text-center">15:00</span>
-                        <span class="text-center">18:00</span>
-                        <span class="text-center">21:00</span>
-                        <span class="text-center">24:00</span>
-                    </div>
+                <div id="timeline-bar" class="flex gap-0.5 mb-6 h-16 bg-slate-900/30 p-2 rounded-lg">
+                    <!-- Rendered via JS -->
+                </div>
+
+                <!-- Time Labels -->
+                <div class="grid grid-cols-9 gap-0 text-center text-xs text-slate-400 font-mono font-medium px-2">
+                    <span>00:00</span>
+                    <span>03:00</span>
+                    <span>06:00</span>
+                    <span>09:00</span>
+                    <span>12:00</span>
+                    <span>15:00</span>
+                    <span>18:00</span>
+                    <span>21:00</span>
+                    <span>24:00</span>
                 </div>
 
                 <!-- Legend -->
-                <div class="flex flex-wrap gap-4 text-sm">
+                <div class="flex flex-wrap gap-4 mt-6 pt-4 border-t border-slate-700/50 text-sm">
                     <div class="flex items-center gap-2">
-                        <div class="w-4 h-4 rounded bg-cyan-400"></div>
-                        <span class="text-slate-300">Світло є</span>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span class="text-slate-300">Світло включено</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <div class="w-4 h-4 rounded bg-red-500"></div>
-                        <span class="text-slate-300">Відключення</span>
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <span class="text-slate-300">Відключено</span>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Outages List Section -->
-        <section class="mb-10 animate-fade-in" style="animation-delay: 0.2s;">
-            <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-                <span class="text-2xl">🕐</span> Години відключень
-            </h3>
+        <!-- Outages Section -->
+        <section class="mb-8 animate-slide-in" style="animation-delay: 0.2s;">
+            <h2 class="text-lg font-bold flex items-center gap-2 mb-4">
+                <span class="text-2xl">🕐</span> Години без світла
+            </h2>
 
-            <div id="outage-intervals" class="space-y-2">
-                <div class="glass-effect rounded-lg p-4 text-center text-slate-400 border border-purple-500/20">
+            <div id="outages-container" class="space-y-2">
+                <div class="glass-effect rounded-xl p-6 text-center text-slate-400">
                     Завантаження даних...
                 </div>
             </div>
         </section>
 
         <!-- All Queues Section -->
-        <section class="animate-fade-in" style="animation-delay: 0.3s;">
-            <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-                <span class="text-2xl">📍</span> Всі черги
-            </h3>
+        <section class="animate-slide-in" style="animation-delay: 0.3s;">
+            <h2 class="text-lg font-bold flex items-center gap-2 mb-4">
+                <span class="text-2xl">📍</span> Вибір черги
+            </h2>
 
-            <div id="all-queues-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-                <!-- Queue cards rendered via JS -->
+            <div class="glass-effect rounded-xl p-6">
+                <div id="queues-grid" class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+                    <!-- Queue badges rendered via JS -->
+                </div>
             </div>
         </section>
 
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-purple-500/20 bg-slate-950/50 mt-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 text-center text-sm text-slate-400">
+    <footer class="border-t border-slate-700/50 glass-effect mt-12">
+        <div class="max-w-6xl mx-auto px-4 py-6 text-center text-sm text-slate-400">
             <p>📌 Дані від ГПВ AT "Черкасиобленерго"</p>
-            <p class="mt-2 text-xs">💾 Працює офлайн • 🔄 Оновлюється кожну годину</p>
+            <p class="mt-2 text-xs">💾 Працює офлайн • 🔄 Оновлюється автоматично</p>
         </div>
     </footer>
 
     <!-- Settings Modal -->
-    <div id="settings-modal" class="fixed inset-0 bg-black/50 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
-        <div class="glass-effect rounded-3xl max-w-md w-full p-8 border-2 border-purple-400/30">
-            <h2 class="text-2xl font-bold mb-6">📌 Вибери чергу</h2>
-            <select id="queue-select" class="w-full bg-slate-950 border border-purple-400/50 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-purple-300 transition mb-4">
+    <div id="settings-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300 pointer-events-none">
+        <div class="glass-effect rounded-xl max-w-sm w-full p-6 border border-slate-700/50 pointer-events-auto opacity-0 scale-95 transition-all duration-300" id="settings-content">
+            <h2 class="text-xl font-bold mb-4">Виберіть чергу</h2>
+
+            <select id="queue-select" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition mb-4">
                 <option value="1.1">Черга 1.1</option>
                 <option value="1.2">Черга 1.2</option>
                 <option value="2.1">Черга 2.1</option>
@@ -269,18 +338,20 @@
                 <option value="6.1">Черга 6.1</option>
                 <option value="6.2">Черга 6.2</option>
             </select>
-            <button id="save-settings-btn" class="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-purple-600/30">
-                Готово ✓
+
+            <button id="settings-close-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg transition">
+                Готово
             </button>
         </div>
     </div>
 
     <!-- First Launch Modal -->
-    <div id="first-launch-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="glass-effect rounded-3xl max-w-md w-full p-8 border-2 border-purple-400/40">
-            <h2 class="text-3xl font-bold mb-2 text-center">👋 Привіт!</h2>
-            <p class="text-slate-300 text-center mb-6">Вибери свою чергу в Черкаській області</p>
-            <select id="first-queue-select" class="w-full bg-slate-950 border border-purple-400/50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-purple-300 transition mb-4">
+    <div id="first-launch-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass-effect rounded-xl max-w-sm w-full p-6 border border-slate-700/50">
+            <h2 class="text-2xl font-bold mb-2">👋 Привіт!</h2>
+            <p class="text-slate-300 mb-6">Оберіть вашу чергу в Черкаській області</p>
+
+            <select id="first-queue-select" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition mb-4">
                 <option value="">Виберіть чергу...</option>
                 <option value="1.1">Черга 1.1</option>
                 <option value="1.2">Черга 1.2</option>
@@ -295,7 +366,8 @@
                 <option value="6.1">Черга 6.1</option>
                 <option value="6.2">Черга 6.2</option>
             </select>
-            <button id="first-launch-btn" class="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-purple-600/30" disabled>
+
+            <button id="first-launch-btn" class="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-semibold py-2 rounded-lg transition" disabled>
                 Почнемо →
             </button>
         </div>

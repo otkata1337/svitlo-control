@@ -16,5 +16,7 @@
   ],
   "author": "SvitloControl",
   "license": "MIT",
-  "dependencies": {}
+  "dependencies": {
+    "express": "^5.3.0"
+  }
 }

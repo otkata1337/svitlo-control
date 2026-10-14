@@ -1,6 +1,6 @@
 // app.js — СвітлоКонтроль (Мттєвий старт + Підказка пошуку + Оптимізація)
 
-const API_BASE_URL = 'https://svitlo-control-production.up.railway.app';
+const API_BASE_URL = './schedules_cache.json';
 
 let userConfig = {
     city: localStorage.getItem('svitlo_city') || 'smila',
@@ -46,9 +46,8 @@ const todayDateStr = document.getElementById('today-date-str');
 const timelineBar = document.getElementById('timeline-bar');
 const outageIntervalsEl = document.getElementById('outage-intervals');
 
-// Швидке завантаження графіків (фоновий запит)
+// Швидке завантаження графіків напряму з файлу кешу у репозиторії
 async function fetchSchedules() {
-    // Спочатку пробуємо показати кеш, щоб не було "Завантаження..."
     const cached = localStorage.getItem('svitlo_schedules_cache');
     if (cached) {
         try {
@@ -60,22 +59,23 @@ async function fetchSchedules() {
         schedules = getDefaultSchedules();
     }
 
-    // Рендеримо одразу з наявних даних
     renderSchedule();
 
-    // А в фоні оновлюємо з серверу
     try {
-        const response = await fetch(`${API_BASE_URL}/api/schedules/cherkasy`, { signal: AbortSignal.timeout(4000) });
+        const response = await fetch(`${API_BASE_URL}?t=${Date.now()}`, { signal: AbortSignal.timeout(5000) });
         if (response.ok) {
             const data = await response.json();
-            if (data.success && data.data) {
-                schedules = data.data;
+            // Якщо файл містить дані безпосередньо або у форматі {success: true, data: ...}
+            const actualData = data.success && data.data ? data.data : data;
+            if (actualData && Object.keys(actualData).length > 0) {
+                schedules = actualData;
                 localStorage.setItem('svitlo_schedules_cache', JSON.stringify(schedules));
-                renderSchedule(); // Перерендер зі свіжими даними
+                renderSchedule();
+                console.log('✅ Графіки успішно оновлено з schedules_cache.json');
             }
         }
     } catch (error) {
-        console.warn('⚠ Фонові дані з серверу не оновлено, використовуємо локальні.');
+        console.warn('⚠ Не вдалося оновити з файлу, використовуємо локальні дані.');
     }
 }
 
@@ -116,13 +116,12 @@ async function initApp() {
     const now = new Date();
     todayDateStr.textContent = now.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' });
 
-    // Миттєвий рендер зі стандартними/кешованими даними
     schedules = getDefaultSchedules();
     renderSchedule();
 
-    // Фоновий запит на актуальні дані
     await fetchSchedules();
 
+    setInterval(fetchSchedules, 60000); // Оновлювати кожну хвилину з кешу
     setInterval(renderSchedule, 30000);
 }
 
@@ -150,198 +149,5 @@ function updateLocationLabel() {
     currentLocationLabel.textContent = `${locationName} • ${userConfig.queue}`;
 }
 
-function getScheduleForToday() {
-    const now = new Date();
-    const today = now.toISOString().split('T')[0];
-    return schedules[today] ? schedules[today][userConfig.queue] || [] : [];
-}
-
-function isOutageAtTime(hour, minute, intervals) {
-    const totalMinutes = hour * 60 + minute;
-    for (const [sH, sM, eH, eM] of intervals) {
-        const start = sH * 60 + sM;
-        const end = eH * 60 + eM;
-        if (totalMinutes >= start && totalMinutes < end) return true;
-    }
-    return false;
-}
-
-function renderSchedule() {
-    const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
-    const currentTotal = currentHour * 60 + currentMinute;
-
-    const intervals = getScheduleForToday();
-    const currentlyOut = isOutageAtTime(currentHour, currentMinute, intervals);
-
-    if (currentlyOut) {
-        statusCard.className = "relative overflow-hidden rounded-3xl p-6 sm:p-7 border transition-all duration-500 shadow-2xl bg-rose-950/40 border-rose-900/60";
-        statusGlow.className = "absolute -right-20 -top-20 w-64 h-64 rounded-full blur-3xl opacity-20 pointer-events-none transition-colors duration-500 bg-rose-500";
-        statusBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-500/20 text-rose-300 border border-rose-500/30";
-        statusBadge.textContent = "Немає світла";
-        statusIconContainer.className = "w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl shadow-inner shrink-0 bg-rose-500/10 border border-rose-500/20 text-rose-400";
-        statusIcon.textContent = "🔌";
-        statusTitle.textContent = "Електроенергія відсутня";
-        statusSubtitle.textContent = `За графіком для черги ${userConfig.queue}`;
-    } else {
-        statusCard.className = "relative overflow-hidden rounded-3xl p-6 sm:p-7 border transition-all duration-500 shadow-2xl bg-emerald-950/30 border-emerald-900/50";
-        statusGlow.className = "absolute -right-20 -top-20 w-64 h-64 rounded-full blur-3xl opacity-20 pointer-events-none transition-colors duration-500 bg-emerald-500";
-        statusBadge.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
-        statusBadge.textContent = "Світло є";
-        statusIconContainer.className = "w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl shadow-inner shrink-0 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400";
-        statusIcon.textContent = "💡";
-        statusTitle.textContent = "Електроенергія є";
-        statusSubtitle.textContent = `Мережа працює для черги ${userConfig.queue}`;
-    }
-
-    updateTime.textContent = `Актуально на ${now.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}`;
-
-    let nextTimeStr = "—";
-    let nextDescStr = "Графік стабільний";
-
-    if (intervals.length > 0) {
-        for (const [sH, sM, eH, eM] of intervals) {
-            const start = sH * 60 + sM;
-            const end = eH * 60 + eM;
-
-            if (currentlyOut) {
-                if (end > currentTotal) {
-                    const diff = end - currentTotal;
-                    nextTimeStr = `${String(eH).padStart(2,'0')}:${String(eM).padStart(2,'0')}`;
-                    nextDescStr = `Увімкнення через ${Math.floor(diff/60)}г ${diff%60}хв`;
-                    break;
-                }
-            } else {
-                if (start > currentTotal) {
-                    const diff = start - currentTotal;
-                    nextTimeStr = `${String(sH).padStart(2,'0')}:${String(sM).padStart(2,'0')}`;
-                    nextDescStr = `Вимкнення через ${Math.floor(diff/60)}г ${diff%60}хв`;
-                    break;
-                }
-            }
-        }
-    }
-
-    nextEventTime.textContent = nextTimeStr;
-    nextEventDesc.textContent = nextDescStr;
-
-    // Таймлайн
-    timelineBar.innerHTML = '';
-    for (let h = 0; h < 24; h++) {
-        const hourCol = document.createElement('div');
-        hourCol.className = "flex-1 h-full flex flex-col gap-0.5 relative group cursor-pointer";
-
-        for (let q = 0; q < 4; q++) {
-            const min = q * 15;
-            const isOut = isOutageAtTime(h, min, intervals);
-
-            const qDiv = document.createElement('div');
-            qDiv.className = `flex-1 rounded-xs transition-all ${isOut ? 'bg-rose-500/90 hover:bg-rose-400' : 'bg-emerald-500/80 hover:bg-emerald-400'} ${h === currentHour && Math.floor(currentMinute/15) === q ? 'ring-2 ring-white z-10' : ''}`;
-            hourCol.appendChild(qDiv);
-        }
-
-        timelineBar.appendChild(hourCol);
-    }
-
-    // Список
-    outageIntervalsEl.innerHTML = '';
-    if (intervals.length === 0) {
-        outageIntervalsEl.innerHTML = `<p class="text-xs text-slate-400 col-span-2 py-2">Сьогодні відключень немає.</p>`;
-    } else {
-        intervals.forEach(([sH, sM, eH, eM]) => {
-            const card = document.createElement('div');
-            card.className = "flex items-center justify-between bg-slate-950/60 border border-slate-800/80 p-3.5 rounded-2xl";
-
-            const timeFormatted = `${String(sH).padStart(2,'0')}:${String(sM).padStart(2,'0')} — ${String(eH).padStart(2,'0')}:${String(eM).padStart(2,'0')}`;
-            const durationMin = (eH * 60 + eM) - (sH * 60 + sM);
-            const durText = `${Math.floor(durationMin/60) > 0 ? Math.floor(durationMin/60) + ' год ' : ''}${durationMin%60 > 0 ? (durationMin%60) + ' хв' : ''}`;
-
-            card.innerHTML = `
-                <div class="flex items-center gap-3">
-                    <div class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shadow-rose-500/50"></div>
-                    <span class="font-mono font-bold text-sm text-slate-200">${timeFormatted}</span>
-                </div>
-                <span class="text-xs font-medium text-slate-400 bg-slate-900 px-2.5 py-1 rounded-xl border border-slate-800">${durText}</span>
-            `;
-            outageIntervalsEl.appendChild(card);
-        });
-    }
-}
-
-// Пошук черги
-findQueueBtn.addEventListener('click', () => {
-    findQueueModal.classList.remove('hidden');
-    findQueueAddressInput.focus();
-});
-
-closeFindQueueBtn.addEventListener('click', () => {
-    findQueueModal.classList.add('hidden');
-    findQueueResult.classList.add('hidden');
-    findQueueError.classList.add('hidden');
-    useFoundQueueBtn.classList.add('hidden');
-});
-
-searchQueueBtn.addEventListener('click', () => {
-    const location = findQueueLocationSelect.value;
-    const address = findQueueAddressInput.value;
-
-    findQueueResult.classList.add('hidden');
-    findQueueError.classList.add('hidden');
-    useFoundQueueBtn.classList.add('hidden');
-
-    if (!address.trim()) {
-        findQueueErrorText.textContent = 'Введіть назву вулиці або села';
-        findQueueError.classList.remove('hidden');
-        return;
-    }
-
-    const queue = findQueueByAddress(address, location);
-
-    if (queue) {
-        foundQueueForApply = { location, queue };
-        findQueueResultText.textContent = `Черга ${queue}`;
-        findQueueResult.classList.remove('hidden');
-        useFoundQueueBtn.classList.remove('hidden');
-    } else {
-        findQueueErrorText.textContent = 'Адресу не знайдено. Спробуйте іншу назву.';
-        findQueueError.classList.add('hidden');
-    }
-});
-
-useFoundQueueBtn.addEventListener('click', () => {
-    if (foundQueueForApply) {
-        userConfig.city = foundQueueForApply.location;
-        userConfig.queue = foundQueueForApply.queue;
-
-        localStorage.setItem('svitlo_city', userConfig.city);
-        localStorage.setItem('svitlo_queue', userConfig.queue);
-
-        citySelect.value = userConfig.city;
-        queueSelect.value = userConfig.queue;
-
-        updateLocationLabel();
-        renderSchedule();
-        findQueueModal.classList.add('hidden');
-    }
-});
-
-settingsBtn.addEventListener('click', () => settingsModal.classList.remove('hidden'));
-closeModalBtn.addEventListener('click', () => settingsModal.classList.add('hidden'));
-settingsModal.addEventListener('click', (e) => {
-    if (e.target === settingsModal) settingsModal.classList.add('hidden');
-});
-
-saveSettingsBtn.addEventListener('click', () => {
-    userConfig.city = citySelect.value;
-    userConfig.queue = queueSelect.value;
-
-    localStorage.setItem('svitlo_city', userConfig.city);
-    localStorage.setItem('svitlo_queue', userConfig.queue);
-
-    settingsModal.classList.add('hidden');
-    updateLocationLabel();
-    renderSchedule();
-});
-
+// Запуск при завантаженні
 document.addEventListener('DOMContentLoaded', initApp);

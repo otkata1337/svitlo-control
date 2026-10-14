@@ -6,16 +6,13 @@ const ALL_QUEUES = ['1.1', '1.2', '2.1', '2.2', '3.1', '3.2', '4.1', '4.2', '5.1
 let schedules = {};
 let selectedQueue = localStorage.getItem('svitlo_queue');
 
-// Перевірити чи першого запуск
 function isFirstLaunch() {
     return !selectedQueue;
 }
 
-// Простая функция: есть ли отключение в этот момент
 function isOutageNow(intervals) {
     const now = new Date();
     const totalMinutes = now.getHours() * 60 + now.getMinutes();
-
     for (const [sH, sM, eH, eM] of intervals) {
         const start = sH * 60 + sM;
         const end = eH * 60 + eM;
@@ -26,11 +23,9 @@ function isOutageNow(intervals) {
     return false;
 }
 
-// Найти следующее отключение
 function getNextOutage(intervals) {
     const now = new Date();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
     for (const [sH, sM, eH, eM] of intervals.sort((a, b) => a[0] * 60 + a[1] - (b[0] * 60 + b[1]))) {
         const start = sH * 60 + sM;
         if (start > currentMinutes) {
@@ -41,7 +36,6 @@ function getNextOutage(intervals) {
     return null;
 }
 
-// Основное отображение
 function render() {
     if (!selectedQueue) return;
 
@@ -53,7 +47,6 @@ function render() {
     const isOff = isOutageNow(intervals);
     const nextOutage = getNextOutage(intervals);
 
-    // Обновить статус
     const statusBadge = document.getElementById('status-badge');
     const statusIcon = document.getElementById('status-icon');
     const statusSubtitle = document.getElementById('status-subtitle');
@@ -75,32 +68,23 @@ function render() {
         statusCard.className = 'glass-effect rounded-3xl p-8 sm:p-10 border-2 border-blue-500/20';
     }
 
-    // Обновить дату
     document.getElementById('today-date-str').textContent = now.toLocaleDateString('uk-UA', {
         day: 'numeric',
         month: 'short'
     });
 
-    // Обновить час
     document.getElementById('update-time').textContent = now.toLocaleTimeString('uk-UA', {
         hour: '2-digit',
         minute: '2-digit'
     });
 
-    // Обновить черг в хедере
     document.getElementById('current-location-label').textContent = `Черга ${selectedQueue}`;
 
-    // Отрисовка таймлайна (24 часа)
     renderTimeline(intervals);
-
-    // Отрисовка списка відключень
     renderOutages(intervals);
-
-    // Отрисовка всех черг
     renderQueues(todayData);
 }
 
-// Таймлайн 24/7
 function renderTimeline(intervals) {
     const bar = document.getElementById('timeline-bar');
     bar.innerHTML = '';
@@ -141,7 +125,6 @@ function renderTimeline(intervals) {
     }
 }
 
-// Список відключень
 function renderOutages(intervals) {
     const el = document.getElementById('outage-intervals');
     el.innerHTML = '';
@@ -151,7 +134,7 @@ function renderOutages(intervals) {
         return;
     }
 
-    intervals.forEach(([sH, sM, eH, eM], i) => {
+    intervals.forEach(([sH, sM, eH, eM]) => {
         const duration = (eH * 60 + eM) - (sH * 60 + sM);
         const hours = Math.floor(duration / 60);
         const mins = duration % 60;
@@ -168,7 +151,6 @@ function renderOutages(intervals) {
     });
 }
 
-// Всі черги (карточки)
 function renderQueues(todayData) {
     const container = document.getElementById('all-queues-container');
     container.innerHTML = '';
@@ -196,7 +178,7 @@ function renderQueues(todayData) {
             <div class="flex flex-col items-center gap-2">
                 <span class="text-2xl">${isOff ? '🔌' : '💡'}</span>
                 <span class="font-bold text-lg">${q}</span>
-                <span class="text-xs text-slate-400">${intervals.length} період${intervals.length !== 1 ? 'и' : ''}</span>
+                <span class="text-xs text-slate-400">${intervals.length}</span>
                 ${isActive ? '<span class="text-xs text-blue-400">✓</span>' : ''}
             </div>
         `;
@@ -211,7 +193,6 @@ function renderQueues(todayData) {
     });
 }
 
-// Завантажити дані
 async function loadSchedules() {
     try {
         const response = await fetch(`${API_BASE_URL}?t=${Date.now()}`, {
@@ -230,27 +211,31 @@ async function loadSchedules() {
     render();
 }
 
-// Першого запуск — вибір черги
 function setupFirstLaunch() {
     if (!isFirstLaunch()) return;
 
     const modal = document.getElementById('first-launch-modal');
     const select = document.getElementById('first-queue-select');
     const btn = document.getElementById('first-launch-btn');
+    const settingsBtn = document.getElementById('settings-btn');
+
+    if (settingsBtn) settingsBtn.style.display = 'none';
 
     select.addEventListener('change', () => {
         btn.disabled = !select.value;
     });
 
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
         selectedQueue = select.value;
         localStorage.setItem('svitlo_queue', selectedQueue);
         modal.style.display = 'none';
-        loadSchedules();
+
+        if (settingsBtn) settingsBtn.style.display = 'block';
+
+        await loadSchedules();
     });
 }
 
-// Модальне вікно налаштувань
 function setupModal() {
     const btn = document.getElementById('settings-btn');
     const modal = document.getElementById('settings-modal');
@@ -279,13 +264,12 @@ function setupModal() {
     });
 }
 
-// Запуск
 window.addEventListener('load', () => {
     setupFirstLaunch();
     setupModal();
     if (!isFirstLaunch()) {
         loadSchedules();
     }
-    setInterval(render, 60000); // Оновлювати щохвилини
-    setInterval(loadSchedules, 300000); // Завантажити щих 5 хвилин
+    setInterval(render, 60000);
+    setInterval(loadSchedules, 300000);
 });

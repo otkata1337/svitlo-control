@@ -1,4 +1,4 @@
-// app.js — СвітлоКонтроль (Максимально простий)
+// app.js — СвітлоКонтроль (Максимально простой)
 
 const API_BASE_URL = './schedules_cache.json';
 const ALL_QUEUES = ['1.1', '1.2', '2.1', '2.2', '3.1', '3.2', '4.1', '4.2', '5.1', '5.2', '6.1', '6.2'];
@@ -8,7 +8,6 @@ let selectedQueue = localStorage.getItem('svitlo_queue');
 
 console.log('App loaded. Queue:', selectedQueue);
 
-// Простие функції
 function isOutageNow(intervals) {
     const now = new Date();
     const totalMinutes = now.getHours() * 60 + now.getMinutes();
@@ -33,7 +32,12 @@ function getNextOutage(intervals) {
 }
 
 function render() {
-    if (!selectedQueue) return;
+    if (!selectedQueue) {
+        console.log('No queue selected, skipping render');
+        return;
+    }
+
+    console.log('Rendering for queue:', selectedQueue);
 
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
@@ -43,10 +47,16 @@ function render() {
     const isOff = isOutageNow(intervals);
     const nextOutage = getNextOutage(intervals);
 
+    // Проверяем наличие элементов
     const sb = document.getElementById('status-badge');
     const si = document.getElementById('status-icon');
     const ss = document.getElementById('status-subtitle');
     const sc = document.getElementById('status-card');
+
+    if (!sb || !si || !ss || !sc) {
+        console.error('Status elements not found:', {sb, si, ss, sc});
+        return;
+    }
 
     if (isOff) {
         sb.textContent = 'Світло відключено!';
@@ -64,9 +74,13 @@ function render() {
         sc.className = 'glass-effect rounded-3xl p-8 sm:p-10 border-2 border-blue-500/20';
     }
 
-    document.getElementById('today-date-str').textContent = now.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' });
-    document.getElementById('update-time').textContent = now.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
-    document.getElementById('current-location-label').textContent = `Черга ${selectedQueue}`;
+    const dateEl = document.getElementById('today-date-str');
+    const timeEl = document.getElementById('update-time');
+    const labelEl = document.getElementById('current-location-label');
+
+    if (dateEl) dateEl.textContent = now.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' });
+    if (timeEl) timeEl.textContent = now.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+    if (labelEl) labelEl.textContent = `Черга ${selectedQueue}`;
 
     renderTimeline(intervals);
     renderOutages(intervals);
@@ -75,6 +89,8 @@ function render() {
 
 function renderTimeline(intervals) {
     const bar = document.getElementById('timeline-bar');
+    if (!bar) return;
+
     bar.innerHTML = '';
     const now = new Date();
     const currentHour = now.getHours();
@@ -108,6 +124,8 @@ function renderTimeline(intervals) {
 
 function renderOutages(intervals) {
     const el = document.getElementById('outage-intervals');
+    if (!el) return;
+
     el.innerHTML = '';
     if (intervals.length === 0) {
         el.innerHTML = '<div class="glass-effect rounded-lg p-4 text-center text-slate-400">Сьогодні без перерв</div>';
@@ -126,6 +144,8 @@ function renderOutages(intervals) {
 
 function renderQueues(todayData) {
     const container = document.getElementById('all-queues-container');
+    if (!container) return;
+
     container.innerHTML = '';
     ALL_QUEUES.forEach(q => {
         const intervals = todayData[q] || [];
@@ -151,38 +171,52 @@ function renderQueues(todayData) {
     });
 }
 
-// Завантажити дані
 async function loadSchedules() {
+    console.log('Loading schedules...');
     try {
         const response = await fetch(`${API_BASE_URL}?t=${Date.now()}`, { signal: AbortSignal.timeout(5000) });
         if (response.ok) {
             schedules = await response.json();
             localStorage.setItem('svitlo_cache', JSON.stringify(schedules));
+            console.log('Schedules loaded successfully');
         }
     } catch (e) {
+        console.log('Failed to fetch, trying cache');
         const cached = localStorage.getItem('svitlo_cache');
-        if (cached) schedules = JSON.parse(cached);
+        if (cached) {
+            schedules = JSON.parse(cached);
+            console.log('Using cached schedules');
+        }
     }
 }
 
-// Ініціалізація
 async function init() {
-    console.log('Init start');
+    console.log('=== Initialization start ===');
 
     // Завантажити дані спочатку
     await loadSchedules();
 
     // Якщо черга не обрана
     if (!selectedQueue) {
-        console.log('No queue selected, showing modal');
+        console.log('No queue selected, showing first launch modal');
         const modal = document.getElementById('first-launch-modal');
         const select = document.getElementById('first-queue-select');
         const btn = document.getElementById('first-launch-btn');
 
-        if (!modal || !select || !btn) {
-            console.error('Modal elements not found');
+        if (!modal) {
+            console.error('Modal not found');
             return;
         }
+        if (!select) {
+            console.error('Select not found');
+            return;
+        }
+        if (!btn) {
+            console.error('Button not found');
+            return;
+        }
+
+        console.log('Modal elements found, attaching handlers');
 
         // На кожну зміну селекту - активувати кнопку
         select.onchange = function() {
@@ -191,23 +225,30 @@ async function init() {
         };
 
         // На клік кнопки - зберегти й закрити
-        btn.onclick = function() {
+        btn.onclick = function(e) {
+            e.preventDefault();
             console.log('Button clicked, queue:', select.value);
-            if (!select.value) return;
+            if (!select.value) {
+                console.log('No queue selected');
+                return;
+            }
 
             selectedQueue = select.value;
             localStorage.setItem('svitlo_queue', selectedQueue);
             console.log('Queue saved:', selectedQueue);
 
             modal.style.display = 'none';
-            render();
+            console.log('Modal hidden');
 
             // Показати кнопку налаштувань
             const settingsBtn = document.getElementById('settings-btn');
             if (settingsBtn) settingsBtn.style.display = 'block';
+
+            render();
         };
     } else {
         // Черга вже обрана - показати контент
+        console.log('Queue already selected:', selectedQueue);
         const modal = document.getElementById('first-launch-modal');
         if (modal) modal.style.display = 'none';
         render();
@@ -221,6 +262,7 @@ async function init() {
 
     if (settingsBtn && settingsModal && saveBtn && queueSelect) {
         settingsBtn.onclick = () => {
+            console.log('Settings button clicked');
             queueSelect.value = selectedQueue;
             settingsModal.classList.remove('hidden', 'opacity-0');
             settingsModal.classList.add('opacity-100');
@@ -228,12 +270,14 @@ async function init() {
 
         settingsModal.onclick = (e) => {
             if (e.target === settingsModal) {
+                console.log('Settings modal close');
                 settingsModal.classList.add('opacity-0');
                 setTimeout(() => settingsModal.classList.add('hidden'), 300);
             }
         };
 
         saveBtn.onclick = () => {
+            console.log('Settings saved, new queue:', queueSelect.value);
             selectedQueue = queueSelect.value;
             localStorage.setItem('svitlo_queue', selectedQueue);
             settingsModal.classList.add('opacity-0');
@@ -242,12 +286,21 @@ async function init() {
         };
     }
 
+    console.log('=== Initialization complete ===');
+
     setInterval(render, 60000);
     setInterval(loadSchedules, 300000);
 }
 
 // Запуск коли сторінка готова
-document.addEventListener('DOMContentLoaded', init);
+console.log('Script loaded, readyState:', document.readyState);
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOMContentLoaded fired');
+    init();
+});
+
 if (document.readyState !== 'loading') {
+    console.log('DOM already ready, init now');
     init();
 }

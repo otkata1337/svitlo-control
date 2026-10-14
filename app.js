@@ -207,73 +207,58 @@ async function loadSchedules() {
     render();
 }
 
-function hideFirstLaunchModal() {
-    const modal = document.getElementById('first-launch-modal');
-    if (modal) {
-        modal.remove();
-    }
-}
-
-function showFirstLaunchModal() {
-    const modal = document.getElementById('first-launch-modal');
-    const select = document.getElementById('first-queue-select');
-    const btn = document.getElementById('first-launch-btn');
-
-    if (!modal) return;
-
-    select.addEventListener('change', (e) => {
-        btn.disabled = !e.target.value;
-    });
-
-    btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const queue = select.value;
-
-        if (!queue) return;
-
-        selectedQueue = queue;
-        localStorage.setItem('svitlo_queue', queue);
-
-        console.log('Queue saved:', selectedQueue);
-
-        hideFirstLaunchModal();
-        loadSchedules();
-    });
-}
-
 function initApp() {
-    // Якщо черга вже обрана, завантажити дані одразу
+    // Якщо черга вже обрана
     if (selectedQueue) {
-        hideFirstLaunchModal();
+        const modal = document.getElementById('first-launch-modal');
+        if (modal) modal.style.display = 'none';
         loadSchedules();
     } else {
-        showFirstLaunchModal();
+        // Налаштування першого запуску
+        const select = document.getElementById('first-queue-select');
+        const btn = document.getElementById('first-launch-btn');
+        const modal = document.getElementById('first-launch-modal');
+
+        if (select && btn && modal) {
+            // Активувати кнопку при виборі
+            select.addEventListener('change', () => {
+                btn.disabled = !select.value;
+            });
+
+            // Обробка клику кнопки
+            btn.addEventListener('click', () => {
+                const queue = select.value;
+                if (!queue) return;
+
+                selectedQueue = queue;
+                localStorage.setItem('svitlo_queue', queue);
+                modal.style.display = 'none';
+
+                loadSchedules();
+            });
+        }
     }
 
-    // Налаштування
+    // Налаштування модального вікна для змін черги
     const settingsBtn = document.getElementById('settings-btn');
     const settingsModal = document.getElementById('settings-modal');
     const saveBtn = document.getElementById('save-settings-btn');
     const queueSelect = document.getElementById('queue-select');
 
-    if (settingsBtn) {
+    if (settingsBtn && settingsModal && saveBtn && queueSelect) {
         settingsBtn.addEventListener('click', () => {
             queueSelect.value = selectedQueue;
             settingsModal.classList.remove('hidden', 'opacity-0');
             settingsModal.classList.add('opacity-100');
         });
-    }
 
-    if (settingsModal) {
         settingsModal.addEventListener('click', (e) => {
             if (e.target === settingsModal) {
                 settingsModal.classList.add('opacity-0');
                 setTimeout(() => settingsModal.classList.add('hidden'), 300);
             }
         });
-    }
 
-    if (saveBtn) {
         saveBtn.addEventListener('click', () => {
             selectedQueue = queueSelect.value;
             localStorage.setItem('svitlo_queue', selectedQueue);

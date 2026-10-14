@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>СвітлоКонтроль — Графіки відключень Черкаської обл.</title>
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,18 +17,28 @@
 
     <style>
         * {
-            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        html, body {
+            height: 100%;
+            background: linear-gradient(135deg, #0f172a 0%, #1a202c 50%, #0f172a 100%);
+            background-attachment: fixed;
+            color: #e2e8f0;
         }
 
         body {
-            background: linear-gradient(135deg, #0f172a 0%, #1a202c 50%, #0f172a 100%);
-            background-attachment: fixed;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
-        /* Smooth scrollbar */
+        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
-            height: 8px;
         }
         ::-webkit-scrollbar-track {
             background: rgba(15, 23, 42, 0.5);
@@ -44,224 +51,656 @@
             background: rgba(59, 130, 246, 0.8);
         }
 
-        /* Animations */
+        /* Header */
+        header {
+            background: linear-gradient(to right, #2563eb, #1d4ed8, #1e40af);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+            padding: 1rem 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        header .container {
+            max-width: 80rem;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        header .left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        header .icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 1rem;
+            background: rgba(250, 204, 21, 0.2);
+            border: 1px solid rgba(250, 204, 21, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: white;
+        }
+
+        header .subtitle {
+            font-size: 0.75rem;
+            color: rgba(191, 219, 254, 1);
+            font-weight: 500;
+        }
+
+        header button {
+            background: rgba(51, 65, 85, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        header button:hover {
+            background: rgba(71, 85, 105, 0.8);
+        }
+
+        /* Main */
+        main {
+            flex: 1;
+            max-width: 80rem;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        section {
+            margin-bottom: 2.5rem;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        section:nth-child(2) { animation-delay: 0.1s; }
+        section:nth-child(3) { animation-delay: 0.2s; }
+        section:nth-child(4) { animation-delay: 0.3s; }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
+        /* Status Card */
+        .status-section {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(59, 130, 246, 0.2);
+            border-radius: 1.5rem;
+            padding: 2rem;
         }
 
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3), 0 0 40px rgba(59, 130, 246, 0.1); }
-            50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.5), 0 0 60px rgba(59, 130, 246, 0.2); }
+        .status-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 2rem;
+            flex-wrap: wrap;
         }
 
-        @keyframes shimmer {
-            0% { background-position: -1000px 0; }
-            100% { background-position: 1000px 0; }
+        .status-left {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            flex: 1;
+            min-width: 250px;
         }
 
-        .animate-fade-in {
-            animation: fadeIn 0.5s ease-out forwards;
+        .status-icon-box {
+            width: 5rem;
+            height: 5rem;
+            border-radius: 1rem;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            flex-shrink: 0;
+            animation: pulse 2s ease-in-out infinite;
         }
 
-        .animate-slide-right {
-            animation: slideInRight 0.5s ease-out forwards;
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.5); }
         }
 
-        .glow {
-            animation: pulse-glow 2s ease-in-out infinite;
+        .status-text {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid;
+            width: fit-content;
+        }
+
+        .status-badge.on {
+            background: rgba(16, 185, 129, 0.2);
+            color: rgba(167, 243, 208, 1);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .status-badge.off {
+            background: rgba(239, 68, 68, 0.2);
+            color: rgba(252, 165, 165, 1);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .status-time {
+            font-size: 0.75rem;
+            color: rgba(148, 163, 184, 1);
+            font-family: monospace;
+        }
+
+        .status-title {
+            font-size: 2rem;
+            font-weight: 900;
+            color: white;
+            margin: 0.25rem 0;
+        }
+
+        .status-subtitle {
+            font-size: 1.125rem;
+            color: rgba(203, 213, 225, 1);
+            margin: 0;
+        }
+
+        .status-right {
+            text-align: right;
+            min-width: 200px;
+        }
+
+        .next-label {
+            font-size: 0.75rem;
+            color: rgba(148, 163, 184, 1);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .next-time {
+            font-size: 2rem;
+            font-weight: 900;
+            font-family: monospace;
+            color: rgba(96, 165, 250, 1);
+            margin-bottom: 0.25rem;
+        }
+
+        .next-desc {
+            font-size: 0.875rem;
+            color: rgba(148, 163, 184, 1);
+        }
+
+        /* Section Title */
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title span:first-child {
+            font-size: 1.5rem;
+        }
+
+        /* Timeline */
+        .timeline-section {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(71, 85, 105, 0.5);
+            border-radius: 1rem;
+            padding: 1.5rem;
+        }
+
+        .timeline-bar {
+            display: flex;
+            gap: 0.125rem;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 0.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            height: 5rem;
+            margin-bottom: 1rem;
+            margin-top: 1rem;
+        }
+
+        .time-slot {
+            flex: 1;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .time-slot.on {
+            background: rgb(16, 185, 129);
+        }
+
+        .time-slot.on:hover {
+            background: rgb(5, 150, 105);
+        }
+
+        .time-slot.off {
+            background: rgb(239, 68, 68);
+        }
+
+        .time-slot.off:hover {
+            background: rgb(220, 38, 38);
+        }
+
+        .timeline-labels {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 0;
+            font-size: 0.75rem;
+            color: rgba(148, 163, 184, 1);
+            font-family: monospace;
+            font-weight: 500;
+            text-align: center;
+            padding: 0 0.25rem;
+        }
+
+        .timeline-legend {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-color {
+            width: 1rem;
+            height: 1rem;
+            border-radius: 0.25rem;
+        }
+
+        .legend-on {
+            background: rgb(16, 185, 129);
+        }
+
+        .legend-off {
+            background: rgb(239, 68, 68);
+        }
+
+        /* Outages List */
+        .outages-section {
+        }
+
+        #outage-intervals {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .outage-item {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .outage-time {
+            font-weight: 700;
+            font-family: monospace;
+            color: white;
+        }
+
+        .outage-duration {
+            font-size: 0.75rem;
+            color: rgba(148, 163, 184, 1);
+        }
+
+        /* Queues Grid */
+        #all-queues-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 0.75rem;
         }
 
         .queue-card {
-            @apply relative overflow-hidden rounded-2xl border transition-all duration-300 cursor-pointer;
-            @apply hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid;
+            border-radius: 1rem;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            text-align: center;
+            user-select: none;
+        }
+
+        .queue-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px -2px rgba(0, 0, 0, 0.3);
         }
 
         .queue-card.active {
-            @apply border-blue-500/50 shadow-lg shadow-blue-500/30;
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 8px 12px -1px rgba(59, 130, 246, 0.3);
             background: linear-gradient(135deg, rgba(30, 58, 138, 0.3) 0%, rgba(59, 130, 246, 0.1) 100%);
         }
 
         .queue-card.off-status {
-            @apply border-red-500/30;
+            border-color: rgba(239, 68, 68, 0.3);
             background: linear-gradient(135deg, rgba(127, 29, 29, 0.2) 0%, rgba(220, 38, 38, 0.05) 100%);
         }
 
         .queue-card.on-status {
-            @apply border-emerald-500/30;
+            border-color: rgba(16, 185, 129, 0.3);
             background: linear-gradient(135deg, rgba(4, 120, 87, 0.2) 0%, rgba(16, 185, 129, 0.05) 100%);
         }
 
-        .status-badge {
-            @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold;
+        .queue-emoji {
+            font-size: 1.5rem;
         }
 
-        .status-badge.on {
-            @apply bg-emerald-500/20 text-emerald-300 border border-emerald-500/30;
+        .queue-number {
+            font-weight: 700;
+            font-size: 1rem;
         }
 
-        .status-badge.off {
-            @apply bg-red-500/20 text-red-300 border border-red-500/30;
+        .queue-count {
+            font-size: 0.7rem;
+            color: rgba(148, 163, 184, 1);
         }
 
-        .time-slot {
-            @apply relative p-1 rounded transition-all;
+        .queue-active-indicator {
+            font-size: 0.7rem;
+            color: rgba(96, 165, 250, 1);
         }
 
-        .time-slot.on {
-            @apply bg-emerald-500 hover:bg-emerald-400;
+        /* Footer */
+        footer {
+            border-top: 1px solid rgba(71, 85, 105, 0.5);
+            background: rgba(15, 23, 42, 0.5);
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2.5rem;
+            font-size: 0.875rem;
+            color: rgba(148, 163, 184, 1);
         }
 
-        .time-slot.off {
-            @apply bg-red-500 hover:bg-red-400;
+        footer p {
+            margin: 0.25rem 0;
         }
 
-        .header-gradient {
-            @apply bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800;
+        /* Modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(12px);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            opacity: 1;
+            transition: opacity 0.3s;
         }
 
-        .glass-effect {
-            @apply bg-slate-900/40 backdrop-blur-md border border-slate-700/50;
+        .modal.hidden {
+            display: none;
+        }
+
+        .modal.hidden-opacity {
+            opacity: 0;
+        }
+
+        .modal-content {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 1.5rem;
+            max-width: 28rem;
+            width: 100%;
+            padding: 2rem;
+        }
+
+        .modal h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .modal p {
+            text-align: center;
+            color: rgba(203, 213, 225, 1);
+            margin-bottom: 1.5rem;
+        }
+
+        .modal select,
+        .modal button {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            background: rgba(15, 23, 42, 0.8);
+            color: white;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .modal select:focus,
+        .modal button:focus {
+            outline: none;
+            border-color: rgba(59, 130, 246, 1);
+        }
+
+        .modal button {
+            background: linear-gradient(to right, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            font-weight: 600;
+        }
+
+        .modal button:hover:not(:disabled) {
+            background: linear-gradient(to right, #1d4ed8, #1e40af);
+        }
+
+        .modal button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            main {
+                padding: 1rem 0.5rem;
+            }
+
+            .status-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .status-right {
+                text-align: center;
+                min-width: auto;
+            }
+
+            header .left {
+                gap: 0.75rem;
+            }
+
+            header h1 {
+                font-size: 1.25rem;
+            }
+
+            header button span:last-child {
+                display: none;
+            }
+
+            .section-title {
+                font-size: 1rem;
+            }
+
+            .timeline-labels {
+                font-size: 0.65rem;
+            }
+
+            #all-queues-container {
+                grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+            }
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col text-slate-100">
+<body>
 
     <!-- Header -->
-    <header class="header-gradient border-b border-blue-500/20 sticky top-0 z-50 shadow-2xl">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-2xl bg-yellow-400/20 border border-yellow-400/40 flex items-center justify-center text-2xl shadow-lg">
-                        ⚡
-                    </div>
-                    <div>
-                        <h1 class="text-2xl font-black tracking-tight text-white">СвітлоКонтроль</h1>
-                        <p class="text-xs text-blue-200 font-medium">Черкаська область</p>
-                    </div>
+    <header>
+        <div class="container">
+            <div class="left">
+                <div class="icon">⚡</div>
+                <div>
+                    <h1>СвітлоКонтроль</h1>
+                    <p class="subtitle">Черкаська область</p>
                 </div>
-
-                <button id="settings-btn" class="group flex items-center gap-2 px-4 py-2 rounded-xl glass-effect hover:bg-slate-800/60 transition-all">
-                    <span class="text-xl group-hover:rotate-90 transition-transform duration-300">⚙️</span>
-                    <span id="current-location-label" class="text-sm font-semibold hidden sm:inline">м. Сміла • 3.1</span>
-                </button>
             </div>
+            <button id="settings-btn">
+                <span>⚙️</span>
+                <span id="current-location-label">м. Сміла • 3.1</span>
+            </button>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8">
-
-        <!-- Status Hero Section -->
-        <section class="mb-10 animate-fade-in">
-            <div class="glass-effect rounded-3xl p-8 sm:p-10 border-2 border-blue-500/20">
-                <div class="flex items-center justify-between gap-6 flex-wrap">
-                    <div class="flex items-start gap-4">
-                        <div id="status-icon-container" class="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl glow border border-blue-500/30">
-                            <span id="status-icon">💡</span>
-                        </div>
+    <!-- Main -->
+    <main>
+        <!-- Status -->
+        <section class="status-section">
+            <div class="status-content">
+                <div class="status-left">
+                    <div class="status-icon-box" id="status-icon-container">
+                        <span id="status-icon">💡</span>
+                    </div>
+                    <div class="status-text">
                         <div>
-                            <div class="flex items-center gap-2 mb-2">
-                                <span id="status-badge" class="status-badge on">Світло є</span>
-                                <span id="update-time" class="text-xs text-slate-400 font-mono">Актуально</span>
-                            </div>
-                            <h2 id="status-title" class="text-3xl sm:text-4xl font-black text-white mb-1">м. Сміла • Черга 3.1</h2>
-                            <p id="status-subtitle" class="text-lg text-slate-300">Завантаження розкладу...</p>
+                            <span class="status-badge on" id="status-badge">Світло є</span>
+                            <span class="status-time" id="update-time">Актуально</span>
                         </div>
+                        <h2 id="status-title" class="status-title">м. Сміла • Черга 3.1</h2>
+                        <p id="status-subtitle" class="status-subtitle">Завантаження розкладу...</p>
                     </div>
-
-                    <div class="text-center sm:text-right">
-                        <p class="text-xs text-slate-400 uppercase font-semibold tracking-wider mb-2">Наступна подія</p>
-                        <p id="next-event-time" class="text-3xl font-black font-mono text-blue-400 mb-1">--:--</p>
-                        <p id="next-event-desc" class="text-sm text-slate-400">Очікування даних</p>
-                    </div>
+                </div>
+                <div class="status-right">
+                    <div class="next-label">Наступна подія</div>
+                    <div class="next-time" id="next-event-time">--:--</div>
+                    <div class="next-desc" id="next-event-desc">Очікування даних</div>
                 </div>
             </div>
         </section>
 
-        <!-- Timeline Section -->
-        <section class="mb-10 animate-fade-in" style="animation-delay: 0.1s;">
-            <div class="glass-effect rounded-2xl p-6 border-2 border-slate-700/50">
-                <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-                    <span class="text-2xl">📊</span> Графік на <span id="today-date-str">--.--.2026</span>
-                </h3>
-
-                <!-- Timeline Bar -->
-                <div class="space-y-2 mb-4">
-                    <div id="timeline-bar" class="flex gap-0.5 bg-slate-950/50 p-2 rounded-xl border border-slate-700/50 h-20">
-                        <!-- Rendered via JS -->
-                    </div>
-                    <div class="grid grid-cols-9 text-[10px] sm:text-xs text-slate-400 px-1 font-mono font-medium">
-                        <span class="text-center">00:00</span>
-                        <span class="text-center">03:00</span>
-                        <span class="text-center">06:00</span>
-                        <span class="text-center">09:00</span>
-                        <span class="text-center">12:00</span>
-                        <span class="text-center">15:00</span>
-                        <span class="text-center">18:00</span>
-                        <span class="text-center">21:00</span>
-                        <span class="text-center">24:00</span>
-                    </div>
+        <!-- Timeline -->
+        <section class="timeline-section">
+            <div class="section-title">
+                <span>📊</span>
+                <span>Графік на <span id="today-date-str">--.--.2026</span></span>
+            </div>
+            <div id="timeline-bar" class="timeline-bar"></div>
+            <div class="timeline-labels">
+                <span>00:00</span>
+                <span>03:00</span>
+                <span>06:00</span>
+                <span>09:00</span>
+                <span>12:00</span>
+                <span>15:00</span>
+                <span>18:00</span>
+                <span>21:00</span>
+                <span>24:00</span>
+            </div>
+            <div class="timeline-legend">
+                <div class="legend-item">
+                    <div class="legend-color legend-on"></div>
+                    <span>Світло є</span>
                 </div>
-
-                <!-- Legend -->
-                <div class="flex flex-wrap gap-4 text-sm">
-                    <div class="flex items-center gap-2">
-                        <div class="w-4 h-4 rounded bg-emerald-500"></div>
-                        <span class="text-slate-300">Світло є</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <div class="w-4 h-4 rounded bg-red-500"></div>
-                        <span class="text-slate-300">Відключення</span>
-                    </div>
+                <div class="legend-item">
+                    <div class="legend-color legend-off"></div>
+                    <span>Відключення</span>
                 </div>
             </div>
         </section>
 
-        <!-- Outages List Section -->
-        <section class="mb-10 animate-fade-in" style="animation-delay: 0.2s;">
-            <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-                <span class="text-2xl">🕐</span> Години відключень
-            </h3>
-
-            <div id="outage-intervals" class="space-y-2">
-                <div class="glass-effect rounded-lg p-4 text-center text-slate-400 border border-slate-700/50">
-                    Завантаження даних...
-                </div>
+        <!-- Outages -->
+        <section class="outages-section">
+            <div class="section-title">
+                <span>🕐</span>
+                <span>Години відключень</span>
             </div>
+            <div id="outage-intervals"></div>
         </section>
 
-        <!-- All Queues Section -->
-        <section class="animate-fade-in" style="animation-delay: 0.3s;">
-            <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-                <span class="text-2xl">📍</span> Всі черги
-            </h3>
-
-            <div id="all-queues-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
-                <!-- Queue cards rendered via JS -->
+        <!-- Queues -->
+        <section>
+            <div class="section-title">
+                <span>📍</span>
+                <span>Всі черги</span>
             </div>
+            <div id="all-queues-container"></div>
         </section>
-
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-slate-800 bg-slate-950/50 mt-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 text-center text-sm text-slate-400">
-            <p>📌 Дані від ГПВ AT "Черкасиобленерго"</p>
-            <p class="mt-2 text-xs">💾 Працює офлайн • 🔄 Оновлюється кожну годину</p>
-        </div>
+    <footer>
+        <p>📌 Дані від ГПВ AT "Черкасиобленерго"</p>
+        <p style="font-size: 0.75rem;">💾 Працює офлайн • 🔄 Оновлюється кожну годину</p>
     </footer>
 
-    <!-- Settings Modal (Налаштування) -->
-    <div id="settings-modal" class="fixed inset-0 bg-black/50 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
-        <div class="glass-effect rounded-3xl max-w-md w-full p-8 border-2 border-blue-500/20 scale-95 transition-transform duration-300">
-            <h2 class="text-2xl font-bold mb-6">📌 Вибери чергу</h2>
-            <select id="queue-select" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 transition mb-4">
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal hidden hidden-opacity">
+        <div class="modal-content">
+            <h2>📌 Вибери чергу</h2>
+            <select id="queue-select">
                 <option value="1.1">Черга 1.1</option>
                 <option value="1.2">Черга 1.2</option>
                 <option value="2.1">Черга 2.1</option>
@@ -275,18 +714,16 @@
                 <option value="6.1">Черга 6.1</option>
                 <option value="6.2">Черга 6.2</option>
             </select>
-            <button id="save-settings-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-blue-600/30">
-                Готово ✓
-            </button>
+            <button id="save-settings-btn">Готово ✓</button>
         </div>
     </div>
 
-    <!-- First Launch Modal (Перший запуск) -->
-    <div id="first-launch-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="glass-effect rounded-3xl max-w-md w-full p-8 border-2 border-blue-500/30">
-            <h2 class="text-3xl font-bold mb-2 text-center">👋 Привіт!</h2>
-            <p class="text-slate-300 text-center mb-6">Вибери свою чергу в Черкаській області</p>
-            <select id="first-queue-select" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 transition mb-4">
+    <!-- First Launch Modal -->
+    <div id="first-launch-modal" class="modal">
+        <div class="modal-content">
+            <h2>👋 Привіт!</h2>
+            <p>Вибери свою чергу в Черкаській області</p>
+            <select id="first-queue-select">
                 <option value="">Виберіть чергу...</option>
                 <option value="1.1">Черга 1.1</option>
                 <option value="1.2">Черга 1.2</option>
@@ -301,9 +738,7 @@
                 <option value="6.1">Черга 6.1</option>
                 <option value="6.2">Черга 6.2</option>
             </select>
-            <button id="first-launch-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-blue-600/30" disabled>
-                Почнемо →
-            </button>
+            <button id="first-launch-btn" disabled>Почнемо →</button>
         </div>
     </div>
 

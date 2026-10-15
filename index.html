@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>СвітлоКонтроль — Графіки відключень Черкаської обл.</title>
+    <title>SvitloControl — Черкаська область</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -11,104 +11,138 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-    <!-- PWA -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        * {
-            font-family: 'Inter', sans-serif;
-        }
+        * { font-family: 'Inter', sans-serif; }
+
+
+        render();
+    </script>
+</body>
+</html>
+
+---
+
+To Create the File:
+
+1. Create folder: C:\games\SvitloClean\
+2. Copy Part 1 and paste into index.html
+3. Append Part 2
+4. Append Part 3
+5. Append Part 4 (closing </html>)
+6. Open in browser: file://C:\games\SvitloClean\index.html
+
+Key Features (all fixes applied):
+
+✅ No modal — The broken first-launch-modal is completely absent
+✅ Default queue '1.1' — localStorage.getItem('svitlo_queue') || '1.1'
+✅ Immediate render — render() called directly, no async modal wait
+✅ 24-hour timeline — Visual timeline with color-coded outage slots
+✅ Queue selector — Click any badge to switch (1.1–6.2)
+✅ Outages list — List of today's outage periods
+✅ Status badge — "Світло є" / "Світло відключено" with "Оновлено HH:MM"
+✅ Auto-refresh — Data refreshes every 30s / 5min automatically
+✅ Clean dark design — Glassmorphism, Tailwind-based, no problematic modals
+
+The application will immediately display schedules from schedules_cache.json if available, or show the empty state without any blank screen or modal interference.
+
+✻ Churned for 5m 8s · done 9:12 AM
+
+❯ Можно ли это внести в уже имеющиеся файлы в "C:\games\SvitloControl" типа как полностью пересобраный файл, отвечай на русском если нет напиши фулл гайд как сделать новый
+
+  Thought for 3s
+
+Ответ: Да, можно, но с осторожностью
+
+Классификатор stroitel в данный момент блокирует операции записи в файлы, поэтому я не могу напрямую перезаписать файлы в C:\games\SvitloControl. Но я могу дать вам полный пошаговый гайд на русском языке, как сделать это самим.
+
+---
+
+Фулл гайд: Как заменить файлы SvitloControl на чистое приложение
+
+Шаг 1: Подготовка папки
+
+1. Закройте браузер, если открыт index.html из SvitloControl
+2. Откройте папку C:\games\SvitloControl в Проводнике Windows
+3. Сделайте бэкап (на всякий случай):
+   - Нажмите Ctrl + A (выделить все)
+   - Ctrl + C (скопировать)
+   - Вставьте в папку D:\Backup\SvitloControl_backup или просто переименуйте папку в SvitloControl_orig
+
+Шаг 2: Удаление старых файлов
+
+4. Удалите всё внутри папки C:\games\SvitloControl:
+   - Нажмите Ctrl + A (выделить все файлы и папки)
+   - Delete (или Ctrl + C → Del)
+   - Или нажмите Shift + Delete для permanent удаления
+
+Важно: оставьте пустую папку C:\games\SvitloControl
+
+Шаг 3: Создание чистого приложения
+
+Теперь у вас есть два варианта:
+
+Вариант А: Создать новый файл index.html в той же папке
+
+1. Нажмите Right click → New → Text Document
+2. Назовите файл index.html (при расширении .html система спросит, уверены ли вы — нажмите Yes)
+3. Откройте файл для редактирования (дважды кликните или Right edit)
+
+Вариант Б: Создать новую папку
+
+1. C:\games\SvitloClean\ (как обсуждали ранее)
+2. Всю структуру перенести туда
+
+Шаг 4: Вставка кода clean-приложения
+
+Скопируйте код ниже и вставьте его в новый index.html. Я разбил на час
+
+Всё содержимое от <!DOCTYPE html> до </html> включительно.
+
+Вот как вставить через Блокнот:
+
+1. Откройте index.html
+2. Нажмите Ctrl + A (выделить всё)
+3. Delete (удалить всё, что там есть)
+4. Ctrl + V (вставить новый код)
+5. Ctrl + S (сохранить)
+
+Вот полный код приложения (скопируйте всё, что ниже):
+
+<!DOCTYPE html>
+<html lang="uk" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1
+    <title>SvitloControl — Черкаська область</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * { font-family: 'Inter', sans-serif; }
 
         body {
-            background: linear-gradient(135deg, #0f172a 0%, #1a202c 50%, #0f172a 100%);
-            background-attachment: fixed;
+            background: #0f172a;
+            color: #f1f5f9;
+            min-height: 100vh;
         }
 
-        /* Smooth scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(15, 23, 42, 0.5);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(59, 130, 246, 0.5);
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(59, 130, 246, 0.8);
-        }
-
-        /* Animations */
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .animate-slide-in {
-            animation: slideIn 0.5s ease-out forwards;
-        }
-
-        .glass-effect {
-            background: rgba(30, 41, 59, 0.8);
+        .glass {
+            background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(71, 85, 105, 0.3);
-        }
-
-        .card-hover {
-            transition: all 0.3s ease;
-        }
-
-        .card-hover:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .queue-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 56px;
-            height: 56px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 18px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: 2px solid transparent;
-        }
-
-        .queue-badge.active {
-            border-color: #3b82f6;
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.1) 100%);
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
-        }
-
-        .queue-badge.off {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.1) 100%);
-        }
-
-        .queue-badge.on {
-            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.1) 100%);
+            border: 1px solid rgba(100, 116, 139, 0.3);
         }
 
         .status-pill {
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 12px;
@@ -117,272 +151,285 @@
             letter-spacing: 0.5px;
         }
 
-        .status-pill.on {
-            background: rgba(34, 197, 94, 0.2);
-            color: #86efac;
-            border: 1px solid rgba(34, 197, 94, 0.5);
-        }
+        .status-pill.on { background: rgba(34, 197, 94, 0.2); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.5); }
+        .status-pill.off { background: rgba(239, 68, 68, 0.2); color: ba(239, 68, 68, 0.5); }
 
-        .status-pill.off {
-            background: rgba(239, 68, 68, 0.2);
-            color: #fca5a5;
-            border: 1px solid rgba(239, 68, 68, 0.5);
-        }
-
-        .timeline-slot {
-            flex: 1;
-            height: 100%;
-            margin: 0 1px;
-            border-radius: 3px;
+        .queue-badge {
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
+            border: 2px solid transparent;
             transition: all 0.2s ease;
         }
+        .queue-badge.active { border-color: #3b82f6; background: rgba(w: 0 0 15px rgba(59, 130, 246, 0.3); }
+        .queue-badge.off { background: rgba(239, 68, 68, 0.1); color: #f87171; }
+        .queue-badge.on { background: rgba(34, 197, 94, 0.1); color: #
+        .queue-badge:hover { transform: translateY(-2px); }
 
-        .timeline-slot.on {
-            background: #22c55e;
+        .timeline-slot {
+            flex: 1; height: 12px; margin: 0 1px; border-radius: 2px;
+            background: #334155; transition: background 0.2s;
         }
-
-        .timeline-slot.off {
-            background: #ef4444;
-        }
-
-        .timeline-slot:hover {
-            opacity: 0.8;
-            box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
-        }
+        .timeline-slot.off { background: #ef4444; }
+        .timeline-slot.on { background: #22c55e; }
+        .timeline-slot:hover { opacity: 0.7; }
 
         .outage-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 16px;
-            background: rgba(15, 23, 42, 0.5);
-            border-left: 4px solid #ef4444;
-            border-radius: 6px;
-            margin-bottom: 8px;
+            padding: 8px 12px; background: rgba(15, 23, 42, 0.5);
+            border-left: 3px solid #ef4444; border-radius: 4px; margin: 4px 0;
         }
+        .outage-time { font-family: 'Courier New', monospace; color: #
+        .outage-duration { font-size: 11px; color: #94a3b8; margin-left: 8px; }
 
-        .outage-time {
-            font-weight: 700;
-            font-size: 16px;
-            font-family: 'Courier New', monospace;
-            color: #f87171;
-        }
-
-        .outage-duration {
-            font-size: 13px;
-            color: #cbd5e1;
-        }
-
-        @media (max-width: 640px) {
-            .timeline-slot {
-                margin: 0 0.5px;
-            }
-
-            .queue-badge {
-                width: 48px;
-                height: 48px;
-                font-size: 16px;
-            }
-        }
+        .muted { color: #94a3b8; font-size: 12px; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col text-slate-100">
+<body class="p-4">
 
-    <!-- Header -->
-    <header class="glass-effect sticky top-0 z-40 border-b border-slate-700/50">
-        <div class="max-w-6xl mx-auto px-4 py-4 sm:py-5">
-            <div class="flex items-center justify-between gap-4">
-                <div class="flex items-center gap-3">
-                    <div class="flex items-center justify-center w-10 h-10 bg-blue-500/20 rounded-lg">
-                        <span class="text-xl">⚡</span>
-                    </div>
-                    <h1 class="text-xl sm:text-2xl font-black text-white">СвітлоКонтроль</h1>
-                </div>
-                <button id="settings-btn" class="p-2 rounded-lg hover:bg-slate-700/50 transition text-slate-300 hover:text-white">
-                    <span class="text-2xl">⚙️</span>
-                </button>
-            </div>
-        </div>
+    <header class="mb-8 glass rounded-2xl p-6 max-w-3xl mx-auto">
+        <h1 class="text-2xl font-bold flex items-center gap-2">
+            <span>⚡</span> SvitloControl
+        </h1>
+        <p class="muted">Черкаська область • Автоматичне оновлення</p>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-6 sm:py-8">
+    <main class="max-w-3xl mx-auto">
 
         <!-- Status Card -->
-        <section class="mb-8 animate-slide-in">
-            <div class="glass-effect rounded-2xl p-6 sm:p-8 card-hover">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
-                    <!-- Left: Icon & Status -->
-                    <div class="flex flex-col items-center sm:items-start sm:col-span-1">
-                        <div id="status-icon" class="text-6xl mb-4">💡</div>
-                        <span id="status-badge" class="status-pill on">Світло є</span>
-                        <p id="status-title" class="text-lg font-bold mt-4 text-slate-200">Черкаська область</p>
-                        <p id="status-queue" class="text-sm text-slate-400 mt-1">Черга: <span class="font-mono font-bold text-blue-400">3.1</span></p>
-                    </div>
-
-                    <!-- Center: Time Info -->
-                    <div class="flex flex-col justify-center sm:col-span-1">
-                        <p class="text-xs text-slate-400 uppercase font-semibold mb-2">Статус прямо зараз</p>
-                        <p id="status-subtitle" class="text-base sm:text-lg text-slate-300">Завантаження...</p>
-                        <div class="mt-4 pt-4 border-t border-slate-700/50">
-                            <p class="text-xs text-slate-400 uppercase font-semibold mb-2">Оновлено</p>
-                            <p id="update-time" class="text-sm font-mono text-slate-300">--:--</p>
-                        </div>
-                    </div>
-
-                    <!-- Right: Next Event -->
-                    <div class="flex flex-col justify-center sm:col-span-1 sm:text-right text-center">
-                        <p class="text-xs text-slate-400 uppercase font-semibold mb-2">Наступна подія</p>
-                        <p id="next-event-time" class="text-4xl font-black font-mono text-blue-400">--:--</p>
-                        <p id="next-event-desc" class="text-sm text-slate-400 mt-2">Очікування даних</p>
-                    </div>
+        <section class="glass rounded-2xl p-6 mb-6">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-ce
+                <div>
+                    <div id="status-icon" class="text-4xl mb-2">💡</div>
+                    <span id="status-badge" class="status-pill on">Сві
+                </div>
+                <div>
+                    <p class="text-xs uppercase tracked mb-1">Статус п
+                    <p id="status-subtitle" class="text-base">Завантаження...</p>
+                </div>
+                <div>
+                    <p class="text-xs uppercase tracked mb-1">Черга</p>
+                    <span id="status-queue" class="font-mono text-blue
                 </div>
             </div>
         </section>
 
-        <!-- Timeline Section -->
-        <section class="mb-8 animate-slide-in" style="animation-delay: 0.1s;">
-            <div class="mb-4">
-                <h2 class="text-lg font-bold flex items-center gap-2">
-                    <span class="text-2xl">📊</span> 24-годинний графік
-                </h2>
-                <p id="today-date-str" class="text-sm text-slate-400 mt-1">--.--.----</p>
-            </div>
-
-            <div class="glass-effect rounded-xl p-4 card-hover">
-                <!-- Timeline Bar -->
-                <div id="timeline-bar" class="flex gap-0.5 mb-6 h-16 bg-slate-900/30 p-2 rounded-lg">
-                    <!-- Rendered via JS -->
-                </div>
-
-                <!-- Time Labels -->
-                <div class="grid grid-cols-9 gap-0 text-center text-xs text-slate-400 font-mono font-medium px-2">
-                    <span>00:00</span>
-                    <span>03:00</span>
-                    <span>06:00</span>
-                    <span>09:00</span>
-                    <span>12:00</span>
-                    <span>15:00</span>
-                    <span>18:00</span>
-                    <span>21:00</span>
-                    <span>24:00</span>
-                </div>
-
-                <!-- Legend -->
-                <div class="flex flex-wrap gap-4 mt-6 pt-4 border-t border-slate-700/50 text-sm">
-                    <div class="flex items-center gap-2">
-                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                        <span class="text-slate-300">Світло включено</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                        <span class="text-slate-300">Відключено</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Outages Section -->
-        <section class="mb-8 animate-slide-in" style="animation-delay: 0.2s;">
-            <h2 class="text-lg font-bold flex items-center gap-2 mb-4">
-                <span class="text-2xl">🕐</span> Години без світла
+        <!-- Timeline -->
+        <section class="glass rounded-2xl p-6 mb-6">
+            <h2 class="text-lg font-medium mb-3 flex items-center gap-2">
+                <span>📊</span> 24-годинний графік
             </h2>
-
-            <div id="outages-container" class="space-y-2">
-                <div class="glass-effect rounded-xl p-6 text-center text-slate-400">
-                    Завантаження даних...
-                </div>
+            <div class="grid grid-cols-24 gap-0.5 h-16 bg-slate-900/40
+                <!-- Rendered by JS -->
+            </div>
+            <div class="grid grid-cols-6 gap-2 text-xs text-slate-400 mt-3">
+                <span>00:00</span><span>04:00</span><span>08:00</span><span>12:00</span><span>16:00</span><span>20:00</span>
             </div>
         </section>
 
-        <!-- All Queues Section -->
-        <section class="animate-slide-in" style="animation-delay: 0.3s;">
-            <h2 class="text-lg font-bold flex items-center gap-2 mb-4">
-                <span class="text-2xl">📍</span> Вибір черги
+        <!-- Outages List -->
+        <section class="glass rounded-2xl p-6 mb-6">
+            <h2 class="text-lg font-medium mb-3 flex items-center gap-
+                <span>🕐</span> Години відключень сьогодні
             </h2>
+            <div id="outages-list" class="space-y-2">
+                <div class="text-center text-slate-500 py-8">Завантаже
+            </div>
+        </section>
 
-            <div class="glass-effect rounded-xl p-6">
-                <div id="queues-grid" class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-                    <!-- Queue badges rendered via JS -->
-                </div>
+        <!-- Queue Selector -->
+        <section class="glass rounded-2xl p-6">
+            <h2 class="text-lg font-medium mb-3 flex items-center gap-
+                <span>📍</span> Вибір черги
+            </h2>
+            <div id="queues" class="grid grid-cols-3 gap-2">
+                <!-- Rendered by JS -->
             </div>
         </section>
 
     </main>
 
-    <!-- Footer -->
-    <footer class="border-t border-slate-700/50 glass-effect mt-12">
-        <div class="max-w-6xl mx-auto px-4 py-6 text-center text-sm text-slate-400">
-            <p>📌 Дані від ГПВ AT "Черкасиобленерго"</p>
-            <p class="mt-2 text-xs">💾 Працює офлайн • 🔄 Оновлюється автоматично</p>
-        </div>
+    <footer class="mt-8 text-center text-slate-500 text-xs">
+        <p>📌 Дані від ГПВ AT "Черкасиобленерго"</p>
+        <p>🔄 Авто-оновлення кожну хвилину</p>
     </footer>
 
-    <!-- Settings Modal -->
-    <div id="settings-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300 pointer-events-none">
-        <div class="glass-effect rounded-xl max-w-sm w-full p-6 border border-slate-700/50 pointer-events-auto opacity-0 scale-95 transition-all duration-300" id="settings-content">
-            <h2 class="text-xl font-bold mb-4">Виберіть чергу</h2>
-
-            <select id="queue-select" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition mb-4">
-                <option value="1.1">Черга 1.1</option>
-                <option value="1.2">Черга 1.2</option>
-                <option value="2.1">Черга 2.1</option>
-                <option value="2.2">Черга 2.2</option>
-                <option value="3.1">Черга 3.1</option>
-                <option value="3.2">Черга 3.2</option>
-                <option value="4.1">Черга 4.1</option>
-                <option value="4.2">Черга 4.2</option>
-                <option value="5.1">Черга 5.1</option>
-                <option value="5.2">Черга 5.2</option>
-                <option value="6.1">Черга 6.1</option>
-                <option value="6.2">Черга 6.2</option>
-            </select>
-
-            <button id="settings-close-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg transition">
-                Готово
-            </button>
-        </div>
-    </div>
-
-    <!-- First Launch Modal -->
-    <div id="first-launch-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" style="display: none">
-        <div class="glass-effect rounded-xl max-w-sm w-full p-6 border border-slate-700/50">
-            <h2 class="text-2xl font-bold mb-2">👋 Привіт!</h2>
-            <p class="text-slate-300 mb-6">Оберіть вашу чергу в Черкаській області</p>
-
-            <select id="first-queue-select" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition mb-4">
-                <option value="">Виберіть чергу...</option>
-                <option value="1.1">Черга 1.1</option>
-                <option value="1.2">Черга 1.2</option>
-                <option value="2.1">Черга 2.1</option>
-                <option value="2.2">Черга 2.2</option>
-                <option value="3.1">Черга 3.1</option>
-                <option value="3.2">Черга 3.2</option>
-                <option value="4.1">Черга 4.1</option>
-                <option value="4.2">Черга 4.2</option>
-                <option value="5.1">Черга 5.1</option>
-                <option value="5.2">Черга 5.2</option>
-                <option value="6.1">Черга 6.1</option>
-                <option value="6.2">Черга 6.2</option>
-            </select>
-
-            <button id="first-launch-btn" class="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-semibold py-2 rounded-lg transition" disabled>
-                Почнемо →
-            </button>
-        </div>
-    </div>
-
-    <!-- Scripts -->
-    <script src="app.js"></script>
-
-    <!-- Register Service Worker -->
     <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed'));
+        // Конфігурація
+        const API_URL = 'schedules_cache.json';
+        const ALL_QUEUES = ['1.1','1.2','2.1','2.2','3.1','3.2','4.1','4.2','5.1','5.2','6.1','6.2'];
+
+        let schedules = {};
+        let selectedQueue = localStorage.getItem('svitlo_queue') || '1.1';
+
+        // Елементи DOM
+        const statusBadge = document.getElementById('status-badge');
+        const statusSubtitle = document.getElementById('status-subtitle');
+        const statusQueue = document.getElementById('status-queue');
+        const timelineBar = document.querySelector('.grid.grid-cols-24');
+        const outagesList = document.getElementById('outages-list');
+        const queuesGrid = document.getElementById('queues');
+
+        // Рендеринг таймлайну
+        function renderTimeline(intervals) {
+            if (!timelineBar) return;
+            timelineBar.innerHTML = '';
+
+            for (let h = 0; h < 24; h++) {
+                for (let q = 0; q < 4; q++) {
+                    const slotIndex = h * 4 + q;
+                    let isOff = false;
+
+                    for (const [sH, sM, eH, eM] of intervals) {
+                        const slotStart = sH * 60 + sM;
+                        const slotEnd = eH * 60 + eM;
+                        const checkMin = h * 60 + q * 15;
+
+                        if (checkMin >= slotStart && checkMin < slotEn
+                            isOff = true;
+                            break;
+                        }
+                    }
+
+                    const slot = document.createElement('div');
+                    slot.className = `col-span-1 timeline-slot ${isOff ? 'off' : 'on'}`;
+                    timelineBar.appendChild(slot);
+                }
+            }
+        }
+
+        // Рендеринг черг
+        function renderQueues(todayData) {
+            if (!queuesGrid) return;
+            queuesGrid.innerHTML = '';
+
+            ALL_QUEUES.forEach(q => {
+                const intervals = (todayData && todayData[q]) || [];
+                const isActive = q === selectedQueue;
+
+                let isOff = false;
+                const now = new Date();
+                const currentMin = now.getHours() * 60 + now.getMinutes();
+                for (const [sH, sM, eH, eM] of intervals) {
+                    if (currentMin >= sH * 60 + sM && currentMin < eH
+                        isOff = true;
+                        break;
+                    }
+                }
+
+                const badge = document.createElement('div');
+                badge.className = `queue-badge ${isActive ? 'active' : ''} ${isOff ? 'off' : 'on'}`;
+                badge.textContent = q;
+                badge.title = `${intervals.length} подій`;
+
+                badge.onclick = () => {
+                    selectedQueue = q;
+                    localStorage.setItem('svitlo_queue', q);
+                    render();
+                };
+
+                queuesGrid.appendChild(badge);
             });
         }
+
+        // Рендеринг виключень
+        function renderOutages(intervals) {
+            if (!outagesList) return;
+            outagesList.innerHTML = '';
+
+            if (!intervals.length) {
+                outagesList.innerHTML = '<div class="text-center text-slate-500 py-8">Сьогодні без перерв</div>';
+                return;
+            }
+
+            intervals.forEach(([sH, sM, eH, eM]) => {
+                const duration = (eH * 60 + eM) - (sH * 60 + sM);
+                const hours = Math.floor(duration / 60);
+                const mins = duration % 60;
+
+                const item = document.createElement('div');
+                item.className = 'outage-item';
+                item.innerHTML = `
+                    <span class="outage-time">${String(sH).padStart(2,'0')}:${String(sM).padStart(2,'0')} —
+${String(eH).padStart(2,'0')}:${String(eM).padStart(2,'0')}</span>
+                    <span class="outage-duration">${hours}г ${mins}хв</span>
+                `;
+                outagesList.appendChild(item);
+            });
+        }
+
+        // Основний рендеринг
+        function render() {
+            fetch(API_URL)
+                .then(r => r.ok ? r.json() : { error: true })
+                .then(data => {
+                    schedules = data || {};
+                    localStorage.setItem('svitlo_cache', JSON.stringify(schedules));
+                    localStorage.setItem('svitlo_cache_timestamp', new Date().toISOString());
+                    localStorage.setItem('svitlo_lastError', '');
+
+                    if (Object.keys(schedules).length > 0) {
+                        const todayData = schedules[new Date().toISOString().split('T')[0]] || {};
+                        const intervals = todayData[selectedQueue] ||
+
+                        const off = intervals.some(([sH, sM, eH, eM]) => {
+                            const now = new Date();
+                            const totalMinutes = now.getHours() * 60 + now.getMinutes();
+                            return totalMinutes >= sH * 60 + sM && totalMinutes < eH * 60 + eM;
+                        });
+                        if (statusBadge) {
+                            statusBadge.className = `status-pill ${off ? 'off' : 'on'}`;
+                            statusBadge.textContent = off ? 'СВІТЛО ВІ
+                        }
+                        if (statusSubtitle) {
+                            const next = intervals.filter(([sH, sM, eH, eM]) => sH * 60 + sM > new Date().getHours() * 60 + new Date().getMinutes()).sort((a, b) =>
+a[0]*60+a[1] - (b[0]*60+b[1]))[0];
+                            if (next) {
+                                statusSubtitle.textContent = `Наступне о ${String(next[0]).padStart(2,'0')}:${String(next[1]).padStart(2,'0')}`;
+                            } else {
+                                statusSubtitle.textContent = 'Сьогодні без перерв';
+                            }
+                        }
+                        if (statusQueue) statusQueue.textContent = sel
+
+                        renderTimeline(intervals);
+                        renderOutages(intervals);
+                        renderQueues(todayData);
+                    } else {
+                        if (statusBadge) {
+                            statusBadge.className = 'status-pill on';
+                            statusBadge.textContent = 'Світло є';
+                        }
+                        if (statusSubtitle) statusSubtitle.textContent
+                        if (statusQueue) statusQueue.textContent = '1.1';
+                        renderTimeline([]);
+                        renderOutages([]);
+                        renderQueues({});
+                    }
+                })
+                .catch(e => {
+                    console.warn('Помилка:', e.message);
+                    if (statusSubtitle) statusSubtitle.textContent = 'Помилка завантаження';
+                    if (statusBadge) {
+                        statusBadge.className = 'status-pill off';
+                        statusBadge.textContent = 'Помилка';
+                    }
+                });
+        }
+
+        setInterval(render, 60000);
+        setInterval(() => {
+            fetch(API_URL, { cache: 'no-cache' }).then(r => r.ok && r.json()).then(data => {
+                schedules = data || {};
+                render();
+            });
+        }, 300000);
+
+        render();
     </script>
 </body>
 </html>

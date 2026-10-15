@@ -2,7 +2,8 @@ const CACHE_NAME = 'svitlo-control-v1';
 const ASSETS = [
   './index.html',
   './app.js',
-  './manifest.json'
+  './manifest.json',
+  './schedules_cache.json'
 ];
 
 self.addEventListener('install', (event) => {

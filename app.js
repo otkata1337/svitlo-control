@@ -134,8 +134,17 @@ async function initApp() {
     const now = new Date();
     todayDateStr.textContent = now.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', year: 'numeric' });
 
-    await fetchSchedules();
-    renderSchedule();
+    const success = await fetchSchedules();
+    if (success) {
+        renderSchedule();
+    } else {
+        // Показуємо стан "немає дані"
+        statusCard.className = "relative overflow-hidden rounded-3xl p-7 border transition-all duration-500 shadow-2xl bg-rose-950/40 border-rose-900/60";
+        statusBadge.textContent = "Немає даних";
+        statusIcon.textContent = "❓";
+        statusTitle.textContent = "Графік не завантажено";
+        statusSubtitle.textContent = 'Перевірте з'єднання або натисніть "Оновити"';
+    }
 
     setInterval(renderSchedule, 30000);
     setInterval(fetchSchedules, 1800000);
@@ -168,12 +177,14 @@ function updateLocationLabel() {
 }
 
 function getScheduleForToday() {
+    if (!schedules) return [];
     const now = new Date();
     const today = now.toISOString().split('T')[0];
     return schedules[today] ? schedules[today][userConfig.queue] || [] : [];
 }
 
 function isOutageAtTime(hour, minute, intervals) {
+    if (!intervals || intervals.length === 0) return false;
     const totalMinutes = hour * 60 + minute;
     for (const [sH, sM, eH, eM] of intervals) {
         const start = sH * 60 + sM;
@@ -191,6 +202,39 @@ function renderSchedule() {
 
     const intervals = getScheduleForToday();
     const currentlyOut = isOutageAtTime(currentHour, currentMinute, intervals);
+
+    // Оновлюємо індикатор часу
+    updateLastUpdateDisplay();
+
+    // Якщо немає графіків — показуємо повідомлення
+    if (!intervals || intervals.length === 0) {
+        statusCard.className = "relative overflow-hidden rounded-3xl p-7 border transition-all duration-500 shadow-2xl bg-rose-950/40 border-rose-900/60";
+        statusGlow.className = "absolute -right-20 -top-20 w-64 h-64 rounded-full blur-3xl opacity-20 pointer-events-none transition-colors duration-500 bg-rose-500";
+        statusBadge.textContent = "Немає даних";
+        statusIcon.textContent = "❓";
+        statusTitle.textContent = "Графік не завантажено";
+        statusSubtitle.textContent = 'Сьогодні графік не доступно';
+
+        updateTime.textContent = `Оновлено о ${now.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' })}`;
+        nextEventTime.textContent = "—";
+        nextEventDesc.textContent = "Графік не знайдено";
+
+        // Таймлайн з дефолтним виглядом
+        timelineBar.innerHTML = '';
+        for (let h = 0; h < 24; h++) {
+            const hourCol = document.createElement('div');
+            hourCol.className = "flex-1 h-full flex flex-col gap-0.5 relative group cursor-pointer";
+            for (let q = 0; q < 4; q++) {
+                const qDiv = document.createElement('div');
+                qDiv.className = `flex-1 rounded-xs bg-slate-800/50`;
+                hourCol.appendChild(qDiv);
+            }
+            timelineBar.appendChild(hourCol);
+        }
+
+        outageIntervalsEl.innerHTML = `<p class="text-xs text-slate-400 col-span-2 py-2">Сьогодні графік не завантажено.</p>`;
+        return;
+    }
 
     if (currentlyOut) {
         statusCard.className = "relative overflow-hidden rounded-3xl p-7 border transition-all duration-500 shadow-2xl bg-rose-950/40 border-rose-900/60";

@@ -7,7 +7,9 @@ const path = require('path');
 
 const PORT = process.env.PORT || 3000;
 const CACHE_FILE = path.join(__dirname, 'schedules-cache.json');
-const CACHE_DURATION = 3600000; // 1 час в миллисекундах
+const CACHE_DURATION = 3600000; // 1 час в мілісекундах
+
+const { parseSchedules, CITIES_MAP, ALERTS_URL, CACHE_FILE: UPDATER_CACHE_FILE } = require('./updater.js');
 
 // Структура даних графіків
 let schedulesCache = {
@@ -63,44 +65,51 @@ function getDefaultSchedules() {
   return schedules;
 }
 
-// Парсинг сайту Черкасиобленерго (спроба)
-function parseCherkasyOblenergo() {
+// Отримання HTML сторінки з alerts.org.ua
+async function fetchAlertsPage() {
   return new Promise((resolve, reject) => {
-    const url = 'https://www.cherkasyoblenergo.com/';
+    console.log(`📥 Завантажую дані з ${ALERTS_URL}...`);
 
-    https.get(url, { timeout: 5000 }, (res) => {
-      let html = '';
-      res.on('data', chunk => html += chunk);
+    https.get(ALERTS_URL, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    }, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
       res.on('end', () => {
-        try {
-          // Шукаємо JSON у сторінці або таблиці
-          // Це дуже базовий парсинг — реальний сайт може мати інші структури
-          const schedules = extractSchedulesFromHTML(html);
-          if (Object.keys(schedules).length > 0) {
-            resolve(schedules);
-          } else {
-            resolve(getDefaultSchedules());
-          }
-        } catch (e) {
-          console.log('⚠ Помилка парсингу:', e.message);
-          resolve(getDefaultSchedules());
-        }
+        console.log('✓ Сторінка завантажена');
+        resolve(data);
       });
-    }).on('error', (e) => {
-      console.log('⚠ Помилка завантаження сайту:', e.message);
-      reject(e);
+    }).on('error', (err) => {
+      console.error(`❌ Помилка при завантаженні: ${err.message}`);
+      reject(err);
     });
   });
 }
 
-// Базовий парсинг HTML (потрібна адаптація під реальний сайт)
-function extractSchedulesFromHTML(html) {
-  const schedules = {};
+// Оновлення графіків з використанням парсера updater.js
+async function updateSchedulesFromUpdater() {
+  console.log('🔄 Оновлення графіків через updater.js parser...');
 
-  // Тимчасово повертаємо дефолт — потрібна адаптація під реальну структуру
-  // У реальній імплементації тут буде regex або cheerio для парсингу таблиць
+  try {
+    const html = await fetchAlertsPage();
+    const schedules = parseSchedules(html);
 
-  return schedules;
+    if (schedules && Object.keys(schedules).length > 0) {
+      schedulesCache.data = schedules;
+      schedulesCache.lastUpdate = Date.now();
+      saveCache();
+      console.log('✓ Графіки оновлено через updater.js parser');
+      return true;
+    } else {
+      console.log('⚠ Парсер повернув порожні дані');
+      return false;
+    }
+  } catch (e) {
+    console.log('⚠ Помилка оновлення через updater.js:', e.message);
+    return false;
+  }
 }
 
 // Оновлення графіків (із кешуванням)
@@ -114,18 +123,16 @@ async function updateSchedules() {
 
   console.log('🔄 Оновлення графіків...');
 
-  try {
-    const schedules = await parseCherkasyOblenergo();
-    schedulesCache.data = schedules;
+  // Спочатку спробуємо підлішений парсер
+  const success = await updateSchedulesFromUpdater();
+
+  if (!success) {
+    // Якщо не вдалося, спробуємо дефолтні графіки
+    console.log('🔄 Спроба дефолтних графіків...');
+    schedulesCache.data = getDefaultSchedules();
     schedulesCache.lastUpdate = now;
     saveCache();
-    console.log('✓ Графіки оновлено');
-  } catch (e) {
-    console.log('⚠ Помилка оновлення, використовуємо кеш:', e.message);
-    if (Object.keys(schedulesCache.data).length === 0) {
-      schedulesCache.data = getDefaultSchedules();
-      schedulesCache.lastUpdate = now;
-    }
+    console.log('✓ Використовуємо дефолтні графіки');
   }
 }
 

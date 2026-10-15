@@ -1,21 +1,8 @@
 @echo off
+chcp 65001 >nul
 cd /d "%~dp0"
-echo ========================================
-echo   Onovlennya SvitloKontrol
-echo ========================================
-echo.
-
-echo 📊 Запуск парсера графіків...
-node updater.js --mock
-
-echo.
-echo ========================================
-echo   Gotovo!
-echo ========================================
-echo.
-echo Графіки оновлено та збережено у schedules_cache.json
-echo API сервер: http://localhost:3000/api/schedules
-echo PWA: відкрити http://localhost:3000
-echo.
-
+python updater.py
+"C:\Program Files\Git\bin\git.exe" add schedules_cache.json
+"C:\Program Files\Git\bin\git.exe" commit -m "Auto-update schedule cache"
+"C:\Program Files\Git\bin\git.exe" push origin main
 pause

@@ -12,50 +12,29 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <style>
-    :root {
-        --bg-primary: #0a0e14;
-        --bg-secondary: #111827;
-        --accent-primary: #f59e0b;
-        --accent-secondary: #ec4899;
-        --text-primary: #f8fafc;
-        --text-secondary: #cbd5e1;
-        --border-color: #1e293b;
-    }
-
-    body {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        background: var(--bg-primary);
-        color: var(--text-primary);
-    }
-
-    .font-mono {
-        font-family: 'JetBrains Mono', monospace;
-    }
-
-    /* Custom scrollbar with accent color */
-    ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-    }
-    ::-webkit-scrollbar-track {
-        background: var(--bg-secondary);
-    }
-    ::-webkit-scrollbar-thumb {
-        background: var(--accent-primary);
-        border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-        background: #fbbf24;
-    }
-
-    /* Focus ring using accent color */
-    :focus-visible {
-        outline: 2px solid var(--accent-primary);
-        outline-offset: 2px;
-    }
-</style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0d1117;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #484f58;
+        }
+    </style>
 </head>
-<body class="bg-[var(--bg-primary)] text-[var(--text-primary)] h-full flex flex-col selection:bg-[var(--accent-primary)] selection-text-[var(--text-secondary)]">
+<body class="bg-[#090d16] text-slate-100 h-full flex flex-col selection:bg-amber-500 selection:text-slate-950">
 
     <!-- Header -->
     <header class="border-b border-slate-800/80 bg-[#090d16]/80 backdrop-blur-md sticky top-0 z-50">
@@ -71,11 +50,7 @@
             </div>
 
             <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                <button id="find-queue-btn" class="group flex items-center gap-1.5 bg-blue-900/80 hover:bg-blue-800 border border-blue-800 hover:border-blue-700 px-2.5 sm:px-3.5 py-2 rounded-xl transition-all shadow-sm text-[11px] font-semibold text-blue-200">
-                    <span>🔍</span>
-                    <span class="hidden xs:inline">Знайти</span>
-                </button>
-                <button id="settings-btn" class="group flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 px-2.5 sm:px-3.5 py-2 rounded-xl transition-all shadow-sm max-w-[130px] sm:max-w-none">
+                <button id="settings-btn" class="group flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 px-3 py-2 rounded-xl transition-all shadow-sm">
                     <span class="text-amber-400 group-hover:rotate-45 transition-transform duration-300 text-sm">⚙️</span>
                     <span id="current-location-label" class="text-xs font-semibold text-slate-200 truncate">м. Сміла • 3.1</span>
                 </button>
@@ -84,25 +59,40 @@
     </header>
 
     <!-- Main Container -->
-    <main class="flex-1 max-w-4xl w-full mx-auto px-4 py-8 space-y-6">
+    <main class="flex-1 max-w-4xl w-full mx-auto px-4 py-6 space-y-5">
+
+        <!-- Quick Help Banner (Find Queue Prompt) - MOVED TO TOP -->
+        <section class="bg-gradient-to-r from-blue-950/80 via-slate-900 to-slate-900 border border-blue-800/50 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3 text-center sm:text-left">
+                <div class="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 text-xl shrink-0 mx-auto sm:mx-0 shadow-inner">
+                    🔍
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-slate-100">Не знаєте свою чергу?</h3>
+                    <p class="text-xs text-slate-300">Введіть свою вулицю або село, і система знайде розклад.</p>
+                </div>
+            </div>
+            <button id="find-queue-btn" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-5 py-3 rounded-xl transition shadow-lg shadow-blue-600/30 shrink-0 cursor-pointer flex items-center justify-center gap-2">
+                <span>Знайти чергу за адресою</span>
+            </button>
+        </section>
 
         <!-- Status Card (Hero) -->
-        <section id="status-card" class="relative overflow-hidden rounded-3xl p-7 border transition-all duration-500 shadow-2xl bg-slate-900/90 border-slate-800">
-            <!-- Background glow effect -->
+        <section id="status-card" class="relative overflow-hidden rounded-3xl p-6 sm:p-7 border transition-all duration-500 shadow-2xl bg-slate-900/90 border-slate-800">
             <div id="status-glow" class="absolute -right-20 -top-20 w-64 h-64 rounded-full blur-3xl opacity-10 pointer-events-none transition-colors duration-500 bg-amber-500"></div>
 
             <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div class="flex items-start space-x-5">
-                    <div id="status-icon-container" class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-inner shrink-0 bg-slate-800 border border-slate-700">
+                <div class="flex items-start space-x-4 sm:space-x-5">
+                    <div id="status-icon-container" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl shadow-inner shrink-0 bg-slate-800 border border-slate-700">
                         <span id="status-icon">💡</span>
                     </div>
                     <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span id="status-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700">Перевірка</span>
-                            <span id="update-time" class="text-xs text-slate-400 font-mono">Оновлено щойно</span>
+                        <div class="flex items-center gap-2 mb-1 flex-wrap">
+                            <span id="status-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700">Готово</span>
+                            <span id="update-time" class="text-xs text-slate-400 font-mono">Актуально</span>
                         </div>
-                        <h2 id="status-title" class="text-2xl md:text-3xl font-extrabold tracking-tight text-white">Завантаження...</h2>
-                        <p id="status-subtitle" class="text-sm text-slate-300 mt-1 max-w-md">Збираємо актуальний графік погодинних відключень</p>
+                        <h2 id="status-title" class="text-2xl md:text-3xl font-extrabold tracking-tight text-white">м. Сміла • 3.1</h2>
+                        <p id="status-subtitle" class="text-sm text-slate-300 mt-1 max-w-md">Завантаження розкладу...</p>
                     </div>
                 </div>
 
@@ -189,9 +179,9 @@
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Населений пункт</label>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Населений пункт / район</label>
                     <select id="city-select" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-amber-500 transition">
-                        <!-- Populated via JS from address-db.js -->
+                        <!-- Populated via JS -->
                     </select>
                 </div>
 
@@ -233,20 +223,20 @@
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Населений пункт</label>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Населений пункт / район</label>
                     <select id="find-queue-location" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition">
                         <!-- Populated via JS -->
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Адреса / Вулиця / Райóн</label>
-                    <input type="text" id="find-queue-address" placeholder="Наприклад: вул. Героїв, с. Озерщина" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition placeholder-slate-600">
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Вулиця або село</label>
+                    <input type="text" id="find-queue-address" placeholder="Наприклад: Героїв, Шевченка, Озерщина" class="w-full bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-blue-500 transition placeholder-slate-600">
                 </div>
 
-                <div id="find-queue-result" class="hidden bg-slate-950/60 border border-slate-800 rounded-2xl p-4">
-                    <p class="text-xs text-slate-400 uppercase tracking-wider mb-2">Ваша черга:</p>
-                    <p id="find-queue-result-text" class="text-2xl font-bold text-blue-400"></p>
+                <div id="find-queue-result" class="hidden bg-slate-950/60 border border-slate-800 rounded-2xl p-4 text-center">
+                    <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Результат пошуку:</p>
+                    <p id="find-queue-result-text" class="text-2xl font-bold text-emerald-400"></p>
                 </div>
 
                 <div id="find-queue-error" class="hidden bg-rose-950/60 border border-rose-800 rounded-2xl p-4">
@@ -255,7 +245,7 @@
             </div>
 
             <button id="search-queue-btn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3.5 rounded-2xl transition shadow-lg shadow-blue-600/20 cursor-pointer">
-                Пошукати
+                Знайти
             </button>
 
             <button id="use-found-queue-btn" class="hidden w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-2xl transition shadow-lg shadow-emerald-600/20 cursor-pointer">

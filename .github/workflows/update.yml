@@ -2,8 +2,8 @@ name: Auto Update Svitlo Schedules
 
 on:
   schedule:
-    - cron: '0 * * * *' # Запуск каждый час
-  workflow_dispatch: # Возможность запустить вручную
+    - cron: '0 */2 * * *' # Запуск кожні 2 години (зменшено навантаження)
+  workflow_dispatch: # Можливість запустити вручну
 
 jobs:
   update-schedules:
@@ -15,10 +15,12 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
-      - name: Run schedule updater
+      - name: Run schedule updater v4
         run: node updater.js
+        env:
+          TZ: 'Europe/Kyiv'
 
       - name: Commit and push if changes
         run: |
